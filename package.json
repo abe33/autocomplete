@@ -1,0 +1,16 @@
+{
+  "name": "autocomplete",
+  "version": "0.33.0",
+  "main": "./lib/autocomplete",
+  "description": "Display possible completions in the editor with `ctrl-space`.",
+  "activationEvents": {
+    "autocomplete:toggle": ".editor"
+  },
+  "repository": "https://github.com/atom/autocomplete",
+  "engines": {
+    "atom": "*"
+  },
+  "dependencies": {
+    "underscore-plus": "1.x"
+  }
+}
