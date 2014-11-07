@@ -8,6 +8,16 @@
 * The Master will need to be able to issue a new search, causing the Providers to abandon old searches, if a new key comes in
 * The searches would be happening and results updating all the time, but the display of the results would only happen when the user took a quarter second's pause.
 
+--- 
+
+## The rest of this document is outdated
+
+I have recently discovered that web workers will not work as outlined below. A new multiple-process implementation is in the works.
+
+---
+
+```
+
 ## Responder Process
 
 The master and providers all run together in a process separate from Atom called the "responder process".  This prevents the responder computation from blocking the main user interaction (typing) in Atom.
@@ -30,3 +40,4 @@ The provider also doesn't know it's true lifecycle.  It is written as if it has 
 
 Each of the two process masters maintain and access data structures for the pre-processed data.  They provide API calls for the providers to call to access the data.  The masters are responsible for giving each provider an isolated view into the data.  The format of the data passed is in a pre-determined fixed format but the master is allowed to change how the data is stored, again so the masters can evolve.
 
+```
