@@ -2,10 +2,10 @@
   lib/process-io.coffee
 ###
 
-{BufferedNodeProcess} = require 'atom'
-fs   = require 'fs'
-{fork, spawn} = require 'child_process'
-_ = require 'underscore-plus'
+fs         = require 'fs'
+{spawn}    = require 'child_process'
+_          = require 'underscore-plus'
+localUtils = require './local-utils'
 
 class ProcessIO 
   constructor: ->
@@ -17,7 +17,7 @@ class ProcessIO
     @subs.push atom.workspaceView.eachEditorView (editorView) =>
       if not editorView.attached or editorView.mini then return
       
-      @subs.push editorSub = editorView.getModel().onDidChange (evt) =>
+      editorSub = (editor = editorView.getModel()).onDidChange (evt) =>
         chgObj =
           cmd:    'bufferDidChange' 
           text:   editor.getTextInBufferRange [evt.start, 0, evt.end+1, 0]
@@ -25,26 +25,20 @@ class ProcessIO
           cursor: editor.getLastCursor().getBufferPosition()
         @send chgObj
         console.log 'process-io buffer change:', chgObj
-      
-      editorView.on 'editor:will-be-removed', -> editorSub.off()
+        
+      @subs.push editorSub
+      @subs.push editorView.on 'editor:will-be-removed', -> editorSub.off()
 
-  send: (msg) -> @child.stdin.write JSON.stringify(msg) + '\n'
-  
+  send: (msg) ->
+    @child.stdin.write JSON.stringify({msg}) + '\n'
+
   recv: (msg) ->
-    console.log 'process-io recv:', msg
+    console.log 'MSG from child:', msg
     
   setupChildEvents: ->
-    
     @subs.push @child.stdout.on 'data', (data) => 
-      lines = data.toString().split '\n'
-      for line in lines when line
-        try
-          msg = JSON.parse line
-        catch err 
-          console.log 'CHILD:', line
-          continue
-        @recv msg
-      
+      for res in localUtils.recvDemuxObj data then @recv res
+
     # these events should never happen
     @subs.push @child.on 'error', (evt) -> 
       console.log 'process-io child error:', evt
@@ -68,4 +62,4 @@ class ProcessIO
       subscription.dispose?()
     delete @subs
         
-module.exports = new ProcessIO
+new ProcessIO

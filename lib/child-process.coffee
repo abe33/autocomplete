@@ -2,15 +2,16 @@
   lib/child-process.coffee
 ###
 
-send = (msg) ->
-  process.stdout.write JSON.stringify(msg) + '\n'
-  
-process.stdin.on 'data', (msgText) ->
-  try
-    obj = JSON.parse msgText[0..-2] # strip lf for debug
-  catch err
-    console.log 'child-process error parsing msg from atom:', err.message, '\n', msg
-    return
-  send obj
+_ = require 'underscore-plus'
 
+localUtils = require './local-utils'
+
+send = (msg) ->
+  process.stdout.write JSON.stringify({msg}) + '\n'
+  
+recv = (msg) -> console.log 'MSG to child:', msg
+
+process.stdin.on 'data', (data) ->
+  for obj in localUtils.recvDemuxObj data, yes then recv obj
+  
 send 'child-process spawned'

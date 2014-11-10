@@ -5,22 +5,31 @@
  */
 
 (function() {
-  var send;
+  var localUtils, recv, send, _;
+
+  _ = require('underscore-plus');
+
+  localUtils = require('./local-utils');
 
   send = function(msg) {
-    return process.stdout.write(JSON.stringify(msg) + '\n');
+    return process.stdout.write(JSON.stringify({
+      msg: msg
+    }) + '\n');
   };
 
-  process.stdin.on('data', function(msgText) {
-    var err, obj;
-    try {
-      obj = JSON.parse(msgText.slice(0, -1));
-    } catch (_error) {
-      err = _error;
-      console.log('child-process error parsing msg from atom:', err.message, '\n', msg);
-      return;
+  recv = function(msg) {
+    return console.log('MSG to child:', msg);
+  };
+
+  process.stdin.on('data', function(data) {
+    var obj, _i, _len, _ref, _results;
+    _ref = localUtils.recvDemuxObj(data, true);
+    _results = [];
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      obj = _ref[_i];
+      _results.push(recv(obj));
     }
-    return send(obj);
+    return _results;
   });
 
   send('child-process spawned');
