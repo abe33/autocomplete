@@ -1,0 +1,1581 @@
+Block
+  Assign
+    Value
+      Obj
+        Value "find"
+        Value "compact"
+        Value "extend"
+        Value "last"
+    Call
+      Value "require"
+      Value "'underscore-plus'"
+  Assign
+    Value
+      Obj
+        Value "Model"
+    Call
+      Value "require"
+      Value "'theorist'"
+  Assign
+    Value
+      Obj
+        Value "Emitter"
+    Call
+      Value "require"
+      Value "'event-kit'"
+  Assign
+    Value "Serializable"
+    Call
+      Value "require"
+      Value "'serializable'"
+  Assign
+    Value "Grim"
+    Call
+      Value "require"
+      Value "'grim'"
+  Assign
+    Value "PaneAxis"
+    Call
+      Value "require"
+      Value "'./pane-axis'"
+  Assign
+    Value "TextEditor"
+    Call
+      Value "require"
+      Value "'./text-editor'"
+  Assign
+    Value "PaneView"
+    Value
+      Null
+  Assign
+    Value "module"
+      Access "exports"
+    Class
+      Value "Pane"
+      Value "Model"
+      Block
+        Call
+          Value "atom"
+            Access "deserializers"
+            Access "add"
+          Value "this"
+        Call
+          Value "Serializable"
+            Access "includeInto"
+          Value "this"
+        Call
+          Value "this"
+            Access "properties"
+          Value
+            Obj
+              Assign
+                Value "container"
+                Value
+                  Undefined
+              Assign
+                Value "activeItem"
+                Value
+                  Undefined
+              Assign
+                Value "focused"
+                Value
+                  Bool
+        Call
+          Value "this"
+            Access "behavior"
+          Value "'active'"
+          Code
+            Block
+              Call
+                Value
+                  Call
+                    Value
+                      Call
+                        Value "this"
+                          Access "$container"
+                          Access "switch"
+                        Code
+                          Param "container"
+                          Block
+                            Value "container"
+                              Access? "$activePane"
+                      Access "map"
+                    Code
+                      Param "activePane"
+                      Block
+                        Op ===
+                          Value "activePane"
+                          Value "this"
+                  Access "distinctUntilChanged"
+        Value
+          Obj
+            Assign
+              Value "constructor"
+              Code
+                Param "params"
+                Block
+                  Call
+                    Splat "arguments"
+                  Assign
+                    Value "this"
+                      Access "emitter"
+                    Op new
+                      Value "Emitter"
+                  Assign
+                    Value "this"
+                      Access "items"
+                    Value
+                      Arr
+                  Call
+                    Value "this"
+                      Access "addItems"
+                    Call
+                      Value "compact"
+                      Op ?
+                        Value "params"
+                          Access? "items"
+                        Value
+                          Arr
+                  If
+                    Existence
+                      Call
+                        Value "this"
+                          Access "getActiveItem"
+                    Block
+                      Call
+                        Value "this"
+                          Access "setActiveItem"
+                        Value "this"
+                          Access "items"
+                          Index
+                            Value "0"
+            Assign
+              Value "serializeParams"
+              Code
+                Block
+                  Value
+                    Obj
+                      Assign
+                        Value "id"
+                        Value "this"
+                          Access "id"
+                      Assign
+                        Value "items"
+                        Call
+                          Value "compact"
+                          Call
+                            Value "this"
+                              Access "items"
+                              Access "map"
+                            Code
+                              Param "item"
+                              Block
+                                Call?
+                                  Value "item"
+                                    Access "serialize"
+                      Assign
+                        Value "activeItemUri"
+                        Call?
+                          Value "this"
+                            Access "activeItem"
+                            Access? "getUri"
+                      Assign
+                        Value "focused"
+                        Value "this"
+                          Access "focused"
+            Assign
+              Value "deserializeParams"
+              Code
+                Param "params"
+                Block
+                  Assign
+                    Value
+                      Obj
+                        Value "items"
+                        Value "activeItemUri"
+                    Value "params"
+                  Assign
+                    Value "params"
+                      Access "items"
+                    Call
+                      Value "compact"
+                      Call
+                        Value "items"
+                          Access "map"
+                        Code
+                          Param "itemState"
+                          Block
+                            Call
+                              Value "atom"
+                                Access "deserializers"
+                                Access "deserialize"
+                              Value "itemState"
+                  Assign
+                    Value "params"
+                      Access "activeItem"
+                    Call
+                      Value "find"
+                      Value "params"
+                        Access "items"
+                      Code
+                        Param "item"
+                        Block
+                          Op ===
+                            Call?
+                              Value "item"
+                                Access "getUri"
+                            Value "activeItemUri"
+                  Value "params"
+            Assign
+              Value "getView"
+              Code
+                Param "object"
+                Block
+                  Call
+                    Value "this"
+                      Access "container"
+                      Access "getView"
+                    Value "object"
+            Assign
+              Value "getParent"
+              Code
+                Block
+                  Value "this"
+                    Access "parent"
+            Assign
+              Value "setParent"
+              Code
+                Param
+                  Value "this"
+                    Access "parent"
+                Block
+                  Value "this"
+                    Access "parent"
+            Assign
+              Value "getContainer"
+              Code
+                Block
+                  Value "this"
+                    Access "container"
+            Assign
+              Value "setContainer"
+              Code
+                Param "container"
+                Block
+                  If
+                    Op !==
+                      Value "container"
+                      Value "this"
+                        Access "container"
+                    Block
+                      Assign
+                        Value "this"
+                          Access "container"
+                        Value "container"
+                      Call
+                        Value "container"
+                          Access "didAddPane"
+                        Value
+                          Obj
+                            Assign
+                              Value "pane"
+                              Value "this"
+            Comment
+            Assign
+              Value "onDidActivate"
+              Code
+                Param "callback"
+                Block
+                  Call
+                    Value "this"
+                      Access "emitter"
+                      Access "on"
+                    Value "'did-activate'"
+                    Value "callback"
+            Assign
+              Value "onDidDestroy"
+              Code
+                Param "callback"
+                Block
+                  Call
+                    Value "this"
+                      Access "emitter"
+                      Access "on"
+                    Value "'did-destroy'"
+                    Value "callback"
+            Assign
+              Value "onDidChangeActive"
+              Code
+                Param "callback"
+                Block
+                  Call
+                    Value "this"
+                      Access "container"
+                      Access "onDidChangeActivePane"
+                    Code
+                      Param "activePane"
+                      Block
+                        Call
+                          Value "callback"
+                          Op ===
+                            Value "this"
+                            Value "activePane"
+            Assign
+              Value "observeActive"
+              Code
+                Param "callback"
+                Block
+                  Call
+                    Value "callback"
+                    Call
+                      Value "this"
+                        Access "isActive"
+                  Call
+                    Value "this"
+                      Access "onDidChangeActive"
+                    Value "callback"
+            Assign
+              Value "onDidAddItem"
+              Code
+                Param "callback"
+                Block
+                  Call
+                    Value "this"
+                      Access "emitter"
+                      Access "on"
+                    Value "'did-add-item'"
+                    Value "callback"
+            Assign
+              Value "onDidRemoveItem"
+              Code
+                Param "callback"
+                Block
+                  Call
+                    Value "this"
+                      Access "emitter"
+                      Access "on"
+                    Value "'did-remove-item'"
+                    Value "callback"
+            Assign
+              Value "onDidMoveItem"
+              Code
+                Param "callback"
+                Block
+                  Call
+                    Value "this"
+                      Access "emitter"
+                      Access "on"
+                    Value "'did-move-item'"
+                    Value "callback"
+            Assign
+              Value "observeItems"
+              Code
+                Param "callback"
+                Block
+                  For
+                    Block
+                      Call
+                        Value "callback"
+                        Value "item"
+                    Call
+                      Value "this"
+                        Access "getItems"
+                  Call
+                    Value "this"
+                      Access "onDidAddItem"
+                    Code
+                      Param
+                        Obj
+                          Value "item"
+                      Block
+                        Call
+                          Value "callback"
+                          Value "item"
+            Assign
+              Value "onDidChangeActiveItem"
+              Code
+                Param "callback"
+                Block
+                  Call
+                    Value "this"
+                      Access "emitter"
+                      Access "on"
+                    Value "'did-change-active-item'"
+                    Value "callback"
+            Assign
+              Value "observeActiveItem"
+              Code
+                Param "callback"
+                Block
+                  Call
+                    Value "callback"
+                    Call
+                      Value "this"
+                        Access "getActiveItem"
+                  Call
+                    Value "this"
+                      Access "onDidChangeActiveItem"
+                    Value "callback"
+            Assign
+              Value "onWillDestroyItem"
+              Code
+                Param "callback"
+                Block
+                  Call
+                    Value "this"
+                      Access "emitter"
+                      Access "on"
+                    Value "'will-destroy-item'"
+                    Value "callback"
+            Assign
+              Value "on"
+              Code
+                Param "eventName"
+                Block
+                  Switch
+                    Value "eventName"
+                    Value "'activated'"
+                    Block
+                      Call
+                        Value "Grim"
+                          Access "deprecate"
+                        Value ""Use Pane::onDidActivate instead""
+                    Value "'destroyed'"
+                    Block
+                      Call
+                        Value "Grim"
+                          Access "deprecate"
+                        Value ""Use Pane::onDidDestroy instead""
+                    Value "'item-added'"
+                    Block
+                      Call
+                        Value "Grim"
+                          Access "deprecate"
+                        Value ""Use Pane::onDidAddItem instead""
+                    Value "'item-removed'"
+                    Block
+                      Call
+                        Value "Grim"
+                          Access "deprecate"
+                        Value ""Use Pane::onDidRemoveItem instead""
+                    Value "'item-moved'"
+                    Block
+                      Call
+                        Value "Grim"
+                          Access "deprecate"
+                        Value ""Use Pane::onDidMoveItem instead""
+                    Value "'before-item-destroyed'"
+                    Block
+                      Call
+                        Value "Grim"
+                          Access "deprecate"
+                        Value ""Use Pane::onWillDestroyItem instead""
+                    Block
+                      Call
+                        Value "Grim"
+                          Access "deprecate"
+                        Value ""Subscribing via ::on is deprecated. Use documented event subscription methods instead.""
+                  Call
+                    Splat "arguments"
+            Assign
+              Value "behavior"
+              Code
+                Param "behaviorName"
+                Block
+                  Switch
+                    Value "behaviorName"
+                    Value "'active'"
+                    Block
+                      Call
+                        Value "Grim"
+                          Access "deprecate"
+                        Value ""The $active behavior property is deprecated. Use ::observeActive or ::onDidChangeActive instead.""
+                    Value "'container'"
+                    Block
+                      Call
+                        Value "Grim"
+                          Access "deprecate"
+                        Value ""The $container behavior property is deprecated.""
+                    Value "'activeItem'"
+                    Block
+                      Call
+                        Value "Grim"
+                          Access "deprecate"
+                        Value ""The $activeItem behavior property is deprecated. Use ::observeActiveItem or ::onDidChangeActiveItem instead.""
+                    Value "'focused'"
+                    Block
+                      Call
+                        Value "Grim"
+                          Access "deprecate"
+                        Value ""The $focused behavior property is deprecated.""
+                    Block
+                      Call
+                        Value "Grim"
+                          Access "deprecate"
+                        Value ""Pane::behavior is deprecated. Use event subscription methods instead.""
+                  Call
+                    Splat "arguments"
+            Assign
+              Value "focus"
+              Code
+                Block
+                  Assign
+                    Value "this"
+                      Access "focused"
+                    Value
+                      Bool
+                  If
+                    Op !
+                      Call
+                        Value "this"
+                          Access "isActive"
+                    Block
+                      Call
+                        Value "this"
+                          Access "activate"
+            Assign
+              Value "blur"
+              Code
+                Block
+                  Assign
+                    Value "this"
+                      Access "focused"
+                    Value
+                      Bool
+                  Value
+                    Bool
+            Assign
+              Value "isFocused"
+              Code
+                Block
+                  Value "this"
+                    Access "focused"
+            Assign
+              Value "getPanes"
+              Code
+                Block
+                  Value
+                    Arr
+                      Value "this"
+            Comment
+            Assign
+              Value "getItems"
+              Code
+                Block
+                  Call
+                    Value "this"
+                      Access "items"
+                      Access "slice"
+            Assign
+              Value "getActiveItem"
+              Code
+                Block
+                  Value "this"
+                    Access "activeItem"
+            Assign
+              Value "setActiveItem"
+              Code
+                Param "activeItem"
+                Block
+                  If
+                    Op !==
+                      Value "activeItem"
+                      Value "this"
+                        Access "activeItem"
+                    Block
+                      Assign
+                        Value "this"
+                          Access "activeItem"
+                        Value "activeItem"
+                      Call
+                        Value "this"
+                          Access "emitter"
+                          Access "emit"
+                        Value "'did-change-active-item'"
+                        Value "this"
+                          Access "activeItem"
+                  Value "this"
+                    Access "activeItem"
+            Assign
+              Value "getActiveEditor"
+              Code
+                Block
+                  If
+                    Op instanceof
+                      Value "this"
+                        Access "activeItem"
+                      Value "TextEditor"
+                    Block
+                      Value "this"
+                        Access "activeItem"
+            Assign
+              Value "itemAtIndex"
+              Code
+                Param "index"
+                Block
+                  Value "this"
+                    Access "items"
+                    Index
+                      Value "index"
+            Assign
+              Value "activateNextItem"
+              Code
+                Block
+                  Assign
+                    Value "index"
+                    Call
+                      Value "this"
+                        Access "getActiveItemIndex"
+                  If
+                    Op <
+                      Value "index"
+                      Op -
+                        Value "this"
+                          Access "items"
+                          Access "length"
+                        Value "1"
+                    Block
+                      Call
+                        Value "this"
+                          Access "activateItemAtIndex"
+                        Op +
+                          Value "index"
+                          Value "1"
+                    Block
+                      Call
+                        Value "this"
+                          Access "activateItemAtIndex"
+                        Value "0"
+            Assign
+              Value "activatePreviousItem"
+              Code
+                Block
+                  Assign
+                    Value "index"
+                    Call
+                      Value "this"
+                        Access "getActiveItemIndex"
+                  If
+                    Op >
+                      Value "index"
+                      Value "0"
+                    Block
+                      Call
+                        Value "this"
+                          Access "activateItemAtIndex"
+                        Op -
+                          Value "index"
+                          Value "1"
+                    Block
+                      Call
+                        Value "this"
+                          Access "activateItemAtIndex"
+                        Op -
+                          Value "this"
+                            Access "items"
+                            Access "length"
+                          Value "1"
+            Assign
+              Value "getActiveItemIndex"
+              Code
+                Block
+                  Call
+                    Value "this"
+                      Access "items"
+                      Access "indexOf"
+                    Value "this"
+                      Access "activeItem"
+            Assign
+              Value "activateItemAtIndex"
+              Code
+                Param "index"
+                Block
+                  Call
+                    Value "this"
+                      Access "activateItem"
+                    Call
+                      Value "this"
+                        Access "itemAtIndex"
+                      Value "index"
+            Assign
+              Value "activateItem"
+              Code
+                Param "item"
+                Block
+                  If
+                    Existence
+                      Value "item"
+                    Block
+                      Call
+                        Value "this"
+                          Access "addItem"
+                        Value "item"
+                      Call
+                        Value "this"
+                          Access "setActiveItem"
+                        Value "item"
+            Assign
+              Value "addItem"
+              Code
+                Param "item"
+                Param "index"
+                  Op +
+                    Call
+                      Value "this"
+                        Access "getActiveItemIndex"
+                    Value "1"
+                Block
+                  If
+                    In
+                      Value "item"
+                      Value "this"
+                        Access "items"
+                    Block
+                      Return
+                  If
+                    Op ===
+                      Op typeof
+                        Value "item"
+                          Access "on"
+                      Value "'function'"
+                    Block
+                      Call
+                        Value "this"
+                          Access "subscribe"
+                        Value "item"
+                        Value "'destroyed'"
+                        Code
+                          Block
+                            Call
+                              Value "this"
+                                Access "removeItem"
+                              Value "item"
+                              Value
+                                Bool
+                  Call
+                    Value "this"
+                      Access "items"
+                      Access "splice"
+                    Value "index"
+                    Value "0"
+                    Value "item"
+                  Call
+                    Value "this"
+                      Access "emit"
+                    Value "'item-added'"
+                    Value "item"
+                    Value "index"
+                  Call
+                    Value "this"
+                      Access "emitter"
+                      Access "emit"
+                    Value "'did-add-item'"
+                    Value
+                      Obj
+                        Value "item"
+                        Value "index"
+                  If
+                    Existence
+                      Call
+                        Value "this"
+                          Access "getActiveItem"
+                    Block
+                      Call
+                        Value "this"
+                          Access "setActiveItem"
+                        Value "item"
+                  Value "item"
+            Assign
+              Value "addItems"
+              Code
+                Param "items"
+                Param "index"
+                  Op +
+                    Call
+                      Value "this"
+                        Access "getActiveItemIndex"
+                    Value "1"
+                Block
+                  Assign
+                    Value "items"
+                    Call
+                      Value "items"
+                        Access "filter"
+                      Code
+                        Param "item"
+                        Block
+                          Op !
+                            Value
+                              Parens
+                                Block
+                                  In
+                                    Value "item"
+                                    Value "this"
+                                      Access "items"
+                  For
+                    Block
+                      Call
+                        Value "this"
+                          Access "addItem"
+                        Value "item"
+                        Op +
+                          Value "index"
+                          Value "i"
+                    Value "items"
+                  Value "items"
+            Assign
+              Value "removeItem"
+              Code
+                Param "item"
+                Param "destroyed"
+                  Value
+                    Bool
+                Block
+                  Assign
+                    Value "index"
+                    Call
+                      Value "this"
+                        Access "items"
+                        Access "indexOf"
+                      Value "item"
+                  If
+                    Op ===
+                      Value "index"
+                      Op -
+                        Value "1"
+                    Block
+                      Return
+                  If
+                    Op ===
+                      Op typeof
+                        Value "item"
+                          Access "on"
+                      Value "'function'"
+                    Block
+                      Call
+                        Value "this"
+                          Access "unsubscribe"
+                        Value "item"
+                  If
+                    Op ===
+                      Value "item"
+                      Value "this"
+                        Access "activeItem"
+                    Block
+                      If
+                        Op ===
+                          Value "this"
+                            Access "items"
+                            Access "length"
+                          Value "1"
+                        Block
+                          Call
+                            Value "this"
+                              Access "setActiveItem"
+                            Value
+                              Undefined
+                        Block
+                          If
+                            Op ===
+                              Value "index"
+                              Value "0"
+                            Block
+                              Call
+                                Value "this"
+                                  Access "activateNextItem"
+                            Block
+                              Call
+                                Value "this"
+                                  Access "activatePreviousItem"
+                  Call
+                    Value "this"
+                      Access "items"
+                      Access "splice"
+                    Value "index"
+                    Value "1"
+                  Call
+                    Value "this"
+                      Access "emit"
+                    Value "'item-removed'"
+                    Value "item"
+                    Value "index"
+                    Value "destroyed"
+                  Call
+                    Value "this"
+                      Access "emitter"
+                      Access "emit"
+                    Value "'did-remove-item'"
+                    Value
+                      Obj
+                        Value "item"
+                        Value "index"
+                        Value "destroyed"
+                  If
+                    Value "destroyed"
+                    Block
+                      Call
+                        Value "this"
+                          Access "container"
+                          Access? "paneItemDestroyed"
+                        Value "item"
+                  If
+                    Op &&
+                      Op ===
+                        Value "this"
+                          Access "items"
+                          Access "length"
+                        Value "0"
+                      Call
+                        Value "atom"
+                          Access "config"
+                          Access "get"
+                        Value "'core.destroyEmptyPanes'"
+                    Block
+                      Call
+                        Value "this"
+                          Access "destroy"
+            Assign
+              Value "moveItem"
+              Code
+                Param "item"
+                Param "newIndex"
+                Block
+                  Assign
+                    Value "oldIndex"
+                    Call
+                      Value "this"
+                        Access "items"
+                        Access "indexOf"
+                      Value "item"
+                  Call
+                    Value "this"
+                      Access "items"
+                      Access "splice"
+                    Value "oldIndex"
+                    Value "1"
+                  Call
+                    Value "this"
+                      Access "items"
+                      Access "splice"
+                    Value "newIndex"
+                    Value "0"
+                    Value "item"
+                  Call
+                    Value "this"
+                      Access "emit"
+                    Value "'item-moved'"
+                    Value "item"
+                    Value "newIndex"
+                  Call
+                    Value "this"
+                      Access "emitter"
+                      Access "emit"
+                    Value "'did-move-item'"
+                    Value
+                      Obj
+                        Value "item"
+                        Value "oldIndex"
+                        Value "newIndex"
+            Assign
+              Value "moveItemToPane"
+              Code
+                Param "item"
+                Param "pane"
+                Param "index"
+                Block
+                  Call
+                    Value "this"
+                      Access "removeItem"
+                    Value "item"
+                  Call
+                    Value "pane"
+                      Access "addItem"
+                    Value "item"
+                    Value "index"
+            Assign
+              Value "destroyActiveItem"
+              Code
+                Block
+                  Call
+                    Value "this"
+                      Access "destroyItem"
+                    Value "this"
+                      Access "activeItem"
+                  Value
+                    Bool
+            Assign
+              Value "destroyItem"
+              Code
+                Param "item"
+                Block
+                  Assign
+                    Value "index"
+                    Call
+                      Value "this"
+                        Access "items"
+                        Access "indexOf"
+                      Value "item"
+                  If
+                    Op !==
+                      Value "index"
+                      Op -
+                        Value "1"
+                    Block
+                      Call
+                        Value "this"
+                          Access "emit"
+                        Value "'before-item-destroyed'"
+                        Value "item"
+                      Call
+                        Value "this"
+                          Access "emitter"
+                          Access "emit"
+                        Value "'will-destroy-item'"
+                        Value
+                          Obj
+                            Value "item"
+                            Value "index"
+                      If
+                        Call
+                          Value "this"
+                            Access "promptToSaveItem"
+                          Value "item"
+                        Block
+                          Call
+                            Value "this"
+                              Access "removeItem"
+                            Value "item"
+                            Value
+                              Bool
+                          Call?
+                            Value "item"
+                              Access "destroy"
+                          Value
+                            Bool
+                        Block
+                          Value
+                            Bool
+            Assign
+              Value "destroyItems"
+              Code
+                Block
+                  For
+                    Block
+                      Call
+                        Value "this"
+                          Access "destroyItem"
+                        Value "item"
+                    Call
+                      Value "this"
+                        Access "getItems"
+            Assign
+              Value "destroyInactiveItems"
+              Code
+                Block
+                  For
+                    Block
+                      Call
+                        Value "this"
+                          Access "destroyItem"
+                        Value "item"
+                    Call
+                      Value "this"
+                        Access "getItems"
+                    Op !==
+                      Value "item"
+                      Value "this"
+                        Access "activeItem"
+            Assign
+              Value "promptToSaveItem"
+              Code
+                Param "item"
+                Block
+                  If
+                    Op !
+                      Parens
+                        Op &&
+                          Op ===
+                            Op typeof
+                              Value "item"
+                                Access "getUri"
+                            Value "'function'"
+                          Call?
+                            Value "item"
+                              Access "shouldPromptToSave"
+                    Block
+                      Return
+                        Value
+                          Bool
+                  Assign
+                    Value "chosen"
+                    Call
+                      Value "atom"
+                        Access "confirm"
+                      Value
+                        Obj
+                          Assign
+                            Value "message"
+                            Value
+                              Parens
+                                Block
+                                  Op +
+                                    Op +
+                                      Value ""'""
+                                      Value
+                                        Parens
+                                          Block
+                                            Op ?
+                                              Call?
+                                                Value "item"
+                                                  Access "getTitle"
+                                              Call
+                                                Value "item"
+                                                  Access "getUri"
+                                    Value ""' has changes, do you want to save them?""
+                          Assign
+                            Value "detailedMessage"
+                            Value ""Your changes will be lost if you close this item without saving.""
+                          Assign
+                            Value "buttons"
+                            Value
+                              Arr
+                                Value ""Save""
+                                Value ""Cancel""
+                                Value ""Don't Save""
+                  Switch
+                    Value "chosen"
+                    Value "0"
+                    Block
+                      Call
+                        Value "this"
+                          Access "saveItem"
+                        Value "item"
+                        Code
+                          Block
+                            Value
+                              Bool
+                    Value "1"
+                    Block
+                      Value
+                        Bool
+                    Value "2"
+                    Block
+                      Value
+                        Bool
+            Assign
+              Value "saveActiveItem"
+              Code
+                Param "nextAction"
+                Block
+                  Call
+                    Value "this"
+                      Access "saveItem"
+                    Call
+                      Value "this"
+                        Access "getActiveItem"
+                    Value "nextAction"
+            Assign
+              Value "saveActiveItemAs"
+              Code
+                Param "nextAction"
+                Block
+                  Call
+                    Value "this"
+                      Access "saveItemAs"
+                    Call
+                      Value "this"
+                        Access "getActiveItem"
+                    Value "nextAction"
+            Assign
+              Value "saveItem"
+              Code
+                Param "item"
+                Param "nextAction"
+                Block
+                  If
+                    Call?
+                      Value "item"
+                        Access? "getUri"
+                    Block
+                      Call?
+                        Value "item"
+                          Access "save"
+                      Call?
+                        Value "nextAction"
+                    Block
+                      Call
+                        Value "this"
+                          Access "saveItemAs"
+                        Value "item"
+                        Value "nextAction"
+            Assign
+              Value "saveItemAs"
+              Code
+                Param "item"
+                Param "nextAction"
+                Block
+                  If
+                    Existence
+                      Value "item"
+                        Access? "saveAs"
+                    Block
+                      Return
+                  Assign
+                    Value "itemPath"
+                    Call?
+                      Value "item"
+                        Access "getPath"
+                  Assign
+                    Value "newItemPath"
+                    Call
+                      Value "atom"
+                        Access "showSaveDialogSync"
+                      Value "itemPath"
+                  If
+                    Value "newItemPath"
+                    Block
+                      Call
+                        Value "item"
+                          Access "saveAs"
+                        Value "newItemPath"
+                      Call?
+                        Value "nextAction"
+            Assign
+              Value "saveItems"
+              Code
+                Block
+                  For
+                    Block
+                      Call
+                        Value "this"
+                          Access "saveItem"
+                        Value "item"
+                    Call
+                      Value "this"
+                        Access "getItems"
+            Assign
+              Value "itemForUri"
+              Code
+                Param "uri"
+                Block
+                  Call
+                    Value "find"
+                    Value "this"
+                      Access "items"
+                    Code
+                      Param "item"
+                      Block
+                        Op ===
+                          Call?
+                            Value "item"
+                              Access "getUri"
+                          Value "uri"
+            Assign
+              Value "activateItemForUri"
+              Code
+                Param "uri"
+                Block
+                  If
+                    Assign
+                      Value "item"
+                      Call
+                        Value "this"
+                          Access "itemForUri"
+                        Value "uri"
+                    Block
+                      Call
+                        Value "this"
+                          Access "activateItem"
+                        Value "item"
+                      Value
+                        Bool
+                    Block
+                      Value
+                        Bool
+            Assign
+              Value "copyActiveItem"
+              Code
+                Block
+                  If
+                    Existence
+                      Value "this"
+                        Access "activeItem"
+                    Block
+                      Op ?
+                        Call?
+                          Value "this"
+                            Access "activeItem"
+                            Access "copy"
+                        Call
+                          Value "atom"
+                            Access "deserializers"
+                            Access "deserialize"
+                          Call
+                            Value "this"
+                              Access "activeItem"
+                              Access "serialize"
+            Comment
+            Assign
+              Value "isActive"
+              Code
+                Block
+                  Op ===
+                    Call
+                      Value "this"
+                        Access "container"
+                        Access? "getActivePane"
+                    Value "this"
+            Assign
+              Value "activate"
+              Code
+                Block
+                  Call
+                    Value "this"
+                      Access "container"
+                      Access? "setActivePane"
+                    Value "this"
+                  Call
+                    Value "this"
+                      Access "emit"
+                    Value "'activated'"
+                  Call
+                    Value "this"
+                      Access "emitter"
+                      Access "emit"
+                    Value "'did-activate'"
+            Assign
+              Value "destroy"
+              Code
+                Block
+                  If
+                    Op &&
+                      Call
+                        Value "this"
+                          Access "container"
+                          Access? "isAlive"
+                      Op ===
+                        Value
+                          Call
+                            Value "this"
+                              Access "container"
+                              Access "getPanes"
+                          Access "length"
+                        Value "1"
+                    Block
+                      Call
+                        Value "this"
+                          Access "destroyItems"
+                    Block
+                      Call
+                        Splat "arguments"
+            Assign
+              Value "destroyed"
+              Code
+                Block
+                  If
+                    Call
+                      Value "this"
+                        Access "isActive"
+                    Block
+                      Call
+                        Value "this"
+                          Access "container"
+                          Access "activateNextPane"
+                  Call
+                    Value "this"
+                      Access "emitter"
+                      Access "emit"
+                    Value "'did-destroy'"
+                  Call
+                    Value "this"
+                      Access "emitter"
+                      Access "dispose"
+                  For
+                    Block
+                      Call?
+                        Value "item"
+                          Access "destroy"
+                    Call
+                      Value "this"
+                        Access "items"
+                        Access "slice"
+            Comment
+            Assign
+              Value "splitLeft"
+              Code
+                Param "params"
+                Block
+                  Call
+                    Value "this"
+                      Access "split"
+                    Value "'horizontal'"
+                    Value "'before'"
+                    Value "params"
+            Assign
+              Value "splitRight"
+              Code
+                Param "params"
+                Block
+                  Call
+                    Value "this"
+                      Access "split"
+                    Value "'horizontal'"
+                    Value "'after'"
+                    Value "params"
+            Assign
+              Value "splitUp"
+              Code
+                Param "params"
+                Block
+                  Call
+                    Value "this"
+                      Access "split"
+                    Value "'vertical'"
+                    Value "'before'"
+                    Value "params"
+            Assign
+              Value "splitDown"
+              Code
+                Param "params"
+                Block
+                  Call
+                    Value "this"
+                      Access "split"
+                    Value "'vertical'"
+                    Value "'after'"
+                    Value "params"
+            Assign
+              Value "split"
+              Code
+                Param "orientation"
+                Param "side"
+                Param "params"
+                Block
+                  If
+                    Value "params"
+                      Access? "copyActiveItem"
+                    Block
+                      Assign
+                        Value "params"
+                          Access "items"
+                        Value
+                          Arr
+                      Call
+                        Value "params"
+                          Access "items"
+                          Access "push"
+                        Call
+                          Value "this"
+                            Access "copyActiveItem"
+                  If
+                    Op !==
+                      Value "this"
+                        Access "parent"
+                        Access "orientation"
+                      Value "orientation"
+                    Block
+                      Call
+                        Value "this"
+                          Access "parent"
+                          Access "replaceChild"
+                        Value "this"
+                        Call
+                          Value "PaneAxis"
+                          Value
+                            Obj
+                              Value "this"
+                                Access "container"
+                              Value "orientation"
+                              Assign
+                                Value "children"
+                                Value
+                                  Arr
+                                    Value "this"
+                  Assign
+                    Value "newPane"
+                    Call
+                      Value "this"
+                        Access "constructor"
+                      Value "params"
+                  Switch
+                    Value "side"
+                    Value "'before'"
+                    Block
+                      Call
+                        Value "this"
+                          Access "parent"
+                          Access "insertChildBefore"
+                        Value "this"
+                        Value "newPane"
+                    Value "'after'"
+                    Block
+                      Call
+                        Value "this"
+                          Access "parent"
+                          Access "insertChildAfter"
+                        Value "this"
+                        Value "newPane"
+                  Call
+                    Value "newPane"
+                      Access "activate"
+                  Value "newPane"
+            Assign
+              Value "findLeftmostSibling"
+              Code
+                Block
+                  If
+                    Op ===
+                      Value "this"
+                        Access "parent"
+                        Access "orientation"
+                      Value "'horizontal'"
+                    Block
+                      Assign
+                        Value
+                          Arr
+                            Value "leftmostSibling"
+                        Value "this"
+                          Access "parent"
+                          Access "children"
+                      If
+                        Op instanceof
+                          Value "leftmostSibling"
+                          Value "PaneAxis"
+                        Block
+                          Value "this"
+                        Block
+                          Value "leftmostSibling"
+                    Block
+                      Value "this"
+            Assign
+              Value "findOrCreateRightmostSibling"
+              Code
+                Block
+                  If
+                    Op ===
+                      Value "this"
+                        Access "parent"
+                        Access "orientation"
+                      Value "'horizontal'"
+                    Block
+                      Assign
+                        Value "rightmostSibling"
+                        Call
+                          Value "last"
+                          Value "this"
+                            Access "parent"
+                            Access "children"
+                      If
+                        Op instanceof
+                          Value "rightmostSibling"
+                          Value "PaneAxis"
+                        Block
+                          Call
+                            Value "this"
+                              Access "splitRight"
+                        Block
+                          Value "rightmostSibling"
+                    Block
+                      Call
+                        Value "this"
+                          Access "splitRight"
