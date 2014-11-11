@@ -5,11 +5,13 @@
  */
 
 (function() {
-  var localUtils, recv, send, _;
+  var buffer, localUtils, recv, send, _;
 
   _ = require('underscore-plus');
 
-  localUtils = require('./local-utils');
+  localUtils = new require('./local-utils');
+
+  buffer = new require('./child-buffer');
 
   send = function(msg) {
     return process.stdout.write(JSON.stringify({
@@ -18,7 +20,10 @@
   };
 
   recv = function(msg) {
-    return console.log('MSG to child:', msg);
+    switch (msg.cmd) {
+      case 'bufferDidChange':
+        return buffer.applyChg(msg);
+    }
   };
 
   process.stdin.on('data', function(data) {

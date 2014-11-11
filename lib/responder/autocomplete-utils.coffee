@@ -1,14 +1,16 @@
 ###
-  lib/utils.coffee
+  lib/responder/autocomplete-utils.coffee
 ###
 
 _ = require 'underscore-plus'
 
-class LocalUtils
+module.exports =
+class AutocompleteUtils
   constructor: -> @partialStreamData = ''
   
   recvDemuxObj: (streamData, child) ->
     lines = streamData.toString().split '\n'
+    
     if lines.length is 1
       @partialStreamData += lines[0]
       return
@@ -18,14 +20,12 @@ class LocalUtils
       lines = _.initial lines
       
     results = []
-    for line in lines when line
+    for line in lines
       try
         msg = JSON.parse line
       catch err 
-        if child then console.log 'CHILD error line:' + '\n', line, '\n', err.message
-        else console.log 'PROCIO line:', line
+        if child then console.log 'recv json parse error:' + '\n', line, '\n', err.message
+        else console.log 'RESPONDER:', line
         continue
       results.push msg.msg
     results
-    
-module.exports = new LocalUtils

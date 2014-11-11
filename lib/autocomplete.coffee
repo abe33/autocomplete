@@ -9,7 +9,7 @@ module.exports =
   editorSubscription: null
 
   activate: ->
-    require './process-io'
+    require './responder-io'
     
     # @editorSubscription = atom.workspaceView.eachEditorView (editor) =>
     #   if editor.attached and not editor.mini
