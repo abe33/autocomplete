@@ -5,15 +5,15 @@
  */
 
 (function() {
-  var AutocompleteUtils, ResponderBuffer, buffer, recv, send, utils, _;
+  var AutocompleteComm, ResponderBuffer, buffer, comm, send, _;
 
   _ = require('underscore-plus');
 
-  AutocompleteUtils = require('../js/autocomplete-utils');
+  AutocompleteComm = require('autocomplete-api').AutocompleteComm;
 
-  ResponderBuffer = require('../js/responder-buffer');
+  ResponderBuffer = require('./responder-buffer');
 
-  utils = new AutocompleteUtils;
+  comm = new AutocompleteComm;
 
   buffer = new ResponderBuffer;
 
@@ -23,32 +23,29 @@
     }) + '\n');
   };
 
-  recv = function(msg) {
-    console.log('----', msg.cmd, '----');
-    console.log(msg.text.replace(/\n/g, '\\n'));
-    switch (msg.cmd) {
-      case 'bufferEdit':
-        return buffer.applyChg(msg);
-      case 'newEditor':
-        return buffer = new ResponderBuffer(msg.text);
-      case 'noActiveEditor':
-        return buffer = null;
-      default:
-        return console.log('responder, unknown msg cmd:', msg);
-    }
-  };
-
   process.stdin.on('data', function(data) {
-    var obj, _i, _len, _ref, _results;
-    _ref = utils.recvDemuxObj(data, true);
+    var msg, recvObjs, _i, _len, _results;
+    recvObjs = comm.recvDemuxObj(data, function(err, line) {
+      return console.log('recv json parse error:' + '\n', line, '\n', err.message);
+    });
     _results = [];
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      obj = _ref[_i];
-      _results.push(recv(obj));
+    for (_i = 0, _len = recvObjs.length; _i < _len; _i++) {
+      msg = recvObjs[_i];
+      switch (msg.cmd) {
+        case 'bufferEdit':
+          _results.push(buffer.applyChg(msg));
+          break;
+        case 'newEditor':
+          _results.push(buffer = new ResponderBuffer(msg.text));
+          break;
+        case 'noActiveEditor':
+          _results.push(buffer = null);
+          break;
+        default:
+          _results.push(console.log('responder, unknown msg cmd:', msg));
+      }
     }
     return _results;
   });
-
-  send('child-process spawned');
 
 }).call(this);

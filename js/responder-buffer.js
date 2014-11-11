@@ -13,7 +13,6 @@
   module.exports = ResponderBuffer = (function() {
     function ResponderBuffer(text) {
       this.lines = (text ? text.split('\n') : []);
-      console.log('---- constructor ----\n', this.lines);
     }
 
     ResponderBuffer.prototype.applyChg = function(chg) {
@@ -21,35 +20,13 @@
       cmd = chg.cmd, text = chg.text, event = chg.event, cursor = chg.cursor;
       cursorRow = cursor.row, cursorColumn = cursor.column;
       chgdLineStart = event.start, chgdLineEnd = event.end, bufferDelta = event.bufferDelta;
-      console.log('buffer applyChg', {
-        text: text.length,
-        chgdLineStart: chgdLineStart,
-        chgdLineEnd: chgdLineEnd,
-        bufferDelta: bufferDelta,
-        cursorRow: cursorRow,
-        cursorColumn: cursorColumn
-      });
       text = text.replace(/\n$/, '');
       this.chgdLines = text.split('\n');
-      (_ref = this.lines).splice.apply(_ref, [chgdLineStart, this.chgdLines.length - bufferDelta].concat(__slice.call(this.chgdLines)));
-      return console.log(this.chgdLines, this.lines);
+      return (_ref = this.lines).splice.apply(_ref, [chgdLineStart, this.chgdLines.length - bufferDelta].concat(__slice.call(this.chgdLines)));
     };
 
     return ResponderBuffer;
 
   })();
-
-
-  /*
-  RESPONDER: ---- bufferEdit ---- 
-  RESPONDER: a 
-  RESPONDER: buffer applyChg { text: 1, 
-  RESPONDER:   chgdLineStart: 0, 
-  RESPONDER:   chgdLineEnd: 0, 
-  RESPONDER:   bufferDelta: 0, 
-  RESPONDER:   cursorRow: 0, 
-  RESPONDER:   cursorColumn: 1 } 
-  RESPONDER: [] []
-   */
 
 }).call(this);

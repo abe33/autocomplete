@@ -2,16 +2,20 @@
   lib/responder.coffee
 ###
 
-fs           = require 'fs'
-{spawn}      = require 'child_process'
-{TextEditor} = require 'atom'
-_            = require 'underscore-plus'
+fs      = require 'fs'
+{spawn} = require 'child_process'
+_       = require 'underscore-plus'
 
-AutocompleteUtils = require '../js/autocomplete-utils'
-utils = new AutocompleteUtils
+{AutocompleteComm} = require 'autocomplete-api'
+comm = new AutocompleteComm
 
 class ProcessIO 
   constructor: ->
+    
+    for provider in atom.views.providers
+      if (TextEditor = provider.modelConstructor).name is 'TextEditor'
+        break
+      
     @subs = []
     
     @child = spawn 'node', ['js/responder-process.js']
@@ -21,9 +25,9 @@ class ProcessIO
       if not editorView.attached or editorView.mini then return
       
       atom.workspace.onDidChangeActivePaneItem (editor) =>
-        if editor instanceof editor.constructor
+        if editor instanceof TextEditor
           @send
-            cmd:    'newEditor' 
+            cmd:    'newEditor'
             text:   editor.getText()
             cursor: editor.getLastCursor().getBufferPosition()
         else
@@ -40,16 +44,18 @@ class ProcessIO
       @subs.push editorView.on 'editor:will-be-removed', -> editorSub.off()
 
   send: (msg) ->
-    # console.log 'processIO send', msg, (Date.now() % 10000)
+    # console.log 'processIO send', msg
     @child.stdin.write JSON.stringify({msg}) + '\n'
 
   recv: (msg) ->
-    console.log 'MSG from child:', msg, (Date.now() % 10000)
+    console.log 'MSG from child:', msg
     
   setupChildEvents: ->
     @subs.push @child.stdout.on 'data', (data) => 
-      # console.log 'data from child:', data.toString(), (Date.now() % 10000)
-      for res in utils.recvDemuxObj data then @recv res
+      # console.log 'data from responder:', data.toString()
+      recvObjs = comm.recvDemuxObj data, (err, line) ->  
+        console.log 'RESPONDER:', line
+      for obj in recvObjs then @recv obj
 
     # these events should never happen
     @subs.push @child.on 'error', (evt) -> 
