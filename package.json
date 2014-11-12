@@ -8,6 +8,7 @@
     "atom": "*"
   },
   "dependencies": {
+    "semver": "~2.3.0",
     "underscore-plus": "1.x",
     "autocomplete-api": "mark-hahn/autocomplete-api"
   }

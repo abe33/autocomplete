@@ -5,9 +5,13 @@
  */
 
 (function() {
-  var AutocompleteComm, ResponderBuffer, buffer, comm, send, _;
+  var AutocompleteComm, Provider, ResponderBuffer, buffer, comm, providers, send, spawn, _;
+
+  spawn = require('child_process').spawn;
 
   _ = require('underscore-plus');
+
+  Provider = require('./provider');
 
   AutocompleteComm = require('autocomplete-api').AutocompleteComm;
 
@@ -16,6 +20,8 @@
   comm = new AutocompleteComm;
 
   buffer = new ResponderBuffer;
+
+  providers = [];
 
   send = function(msg) {
     return process.stdout.write(JSON.stringify({
@@ -32,11 +38,14 @@
     for (_i = 0, _len = recvObjs.length; _i < _len; _i++) {
       msg = recvObjs[_i];
       switch (msg.cmd) {
-        case 'bufferEdit':
-          _results.push(buffer.applyChg(msg));
+        case 'register':
+          _results.push(providers.push(new Provider(msg.path)));
           break;
         case 'newEditor':
           _results.push(buffer = new ResponderBuffer(msg.text));
+          break;
+        case 'bufferEdit':
+          _results.push(buffer.applyChg(msg));
           break;
         case 'noActiveEditor':
           _results.push(buffer = null);

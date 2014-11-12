@@ -9,7 +9,7 @@ _       = require 'underscore-plus'
 {AutocompleteComm} = require 'autocomplete-api'
 comm = new AutocompleteComm
 
-class ProcessIO 
+class ResponderIO 
   constructor: ->
     
     for provider in atom.views.providers
@@ -28,6 +28,7 @@ class ProcessIO
         if editor instanceof TextEditor
           @send
             cmd:    'newEditor'
+            path:   editor.getPath()
             text:   editor.getText()
             cursor: editor.getLastCursor().getBufferPosition()
         else
@@ -56,22 +57,10 @@ class ProcessIO
       recvObjs = comm.recvDemuxObj data, (err, line) ->  
         console.log 'RESPONDER:', line
       for obj in recvObjs then @recv obj
-
-    # these events should never happen
-    @subs.push @child.on 'error', (evt) -> 
-      console.log 'process-io responder error:', evt
-    @subs.push @child.on 'disconnect', (evt) -> 
-      console.log 'process-io responder disconnect:', evt
-    @subs.push @child.on 'exit', (evt) -> 
-      console.log 'process-io responder exit:', evt
-    @subs.push @child.on 'close', (evt) -> 
-      console.log 'process-io responder close:', evt
-    @subs.push @child.stdout.on 'end', ->
-      console.log 'process-io: unexpected stdout end from responder'
-    @subs.push @child.stderr.on 'data', (data) ->
-      console.log 'process-io: Responder Error', data.toString()
-    @subs.push @child.stderr.on 'end', ->
-      console.log 'process-io: unexpected stderr end from responder'
+        
+    comm.handleProcessErrors @subs, @child, 'Atom'
+    
+  registerProvider: (name, path) -> @send {cmd: 'register', name, path}
 
   destroy: ->
     @child.disconnect()
@@ -80,4 +69,4 @@ class ProcessIO
       subscription.dispose?()
     delete @subs
         
-new ProcessIO
+new ResponderIO

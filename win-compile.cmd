@@ -1,3 +1,4 @@
 
-start coffee -cwo node_modules/autocomplete-api/lib node_modules/autocomplete-api/src
+start coffee -cwo ../autocomplete-api/lib          ../autocomplete-api/src
+start coffee -cwo ../autocomplete-coffeescript/lib ../autocomplete-coffeescript/src
 coffee -cwo js lib/responder

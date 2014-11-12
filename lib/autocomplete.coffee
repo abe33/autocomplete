@@ -1,4 +1,6 @@
-_ = require 'underscore-plus'
+
+_      = require 'underscore-plus'
+semver = require 'semver'
 AutocompleteView = require './autocomplete-view'
 
 module.exports =
@@ -7,9 +9,10 @@ module.exports =
 
   autocompleteViews: []
   editorSubscription: null
+  version: require('../package.json').version
 
   activate: ->
-    require './responder-io'
+    @responderIO = require './responder-io'
     
     # @editorSubscription = atom.workspaceView.eachEditorView (editor) =>
     #   if editor.attached and not editor.mini
@@ -19,6 +22,11 @@ module.exports =
     #       _.remove(@autocompleteViews, autocompleteView)
     #     @autocompleteViews.push(autocompleteView)
 
+  versionMatch: (expectedVersion) -> semver.satisfies(@version, expectedVersion)
+
+  registerProvider: (name, path) ->
+    @responderIO.registerProvider name, path
+    
   deactivate: ->
     @editorSubscription?.off()
     @editorSubscription = null
