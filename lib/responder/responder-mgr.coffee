@@ -4,7 +4,6 @@
   It provides the interface from atom to the responder process
 ###
 
-{TextEditor} = require 'atom'
 _            = require 'underscore-plus'
 Api          = require '../api/api'
 
@@ -12,6 +11,11 @@ module.exports =
 class ResponderMgr 
   
   constructor: (@api) ->
+    
+    for provider in atom.views.providers
+      if (TextEditor = provider.modelConstructor).name is 'TextEditor'
+        break
+    
     @subs = []
     
     @responder = @api.createProcess 'js/responder-process.js', 'atom', 'responder'

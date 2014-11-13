@@ -7,9 +7,7 @@
  */
 
 (function() {
-  var Api, ResponderMgr, TextEditor, _;
-
-  TextEditor = require('atom').TextEditor;
+  var Api, ResponderMgr, _;
 
   _ = require('underscore-plus');
 
@@ -17,7 +15,15 @@
 
   module.exports = ResponderMgr = (function() {
     function ResponderMgr(api) {
+      var TextEditor, provider, _i, _len, _ref;
       this.api = api;
+      _ref = atom.views.providers;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        provider = _ref[_i];
+        if ((TextEditor = provider.modelConstructor).name === 'TextEditor') {
+          break;
+        }
+      }
       this.subs = [];
       this.responder = this.api.createProcess('js/responder-process.js', 'atom', 'responder');
       this.api.recvFromChild(this.responder, 'responder', function(message) {
