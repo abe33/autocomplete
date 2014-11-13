@@ -5,56 +5,40 @@
  */
 
 (function() {
-  var AutocompleteComm, Provider, ResponderBuffer, buffer, comm, providers, send, spawn, _;
+  var Api, Provider, ResponderBuffer, api, buffer, providers, send;
 
-  spawn = require('child_process').spawn;
-
-  _ = require('underscore-plus');
+  Api = require(process.argv[2]);
 
   Provider = require('./provider');
 
-  AutocompleteComm = require('autocomplete-api').AutocompleteComm;
-
   ResponderBuffer = require('./responder-buffer');
 
-  comm = new AutocompleteComm;
+  api = new Api;
 
   buffer = new ResponderBuffer;
 
   providers = [];
 
   send = function(msg) {
-    return process.stdout.write(JSON.stringify({
-      msg: msg
-    }) + '\n');
+    return api.sendToParent(msg);
   };
 
-  process.stdin.on('data', function(data) {
-    var msg, recvObjs, _i, _len, _results;
-    recvObjs = comm.recvDemuxObj(data, function(err, line) {
-      return console.log('recv json parse error:' + '\n', line, '\n', err.message);
-    });
-    _results = [];
-    for (_i = 0, _len = recvObjs.length; _i < _len; _i++) {
-      msg = recvObjs[_i];
-      switch (msg.cmd) {
-        case 'register':
-          _results.push(providers.push(new Provider(msg.path)));
-          break;
-        case 'newEditor':
-          _results.push(buffer = new ResponderBuffer(msg.text));
-          break;
-        case 'bufferEdit':
-          _results.push(buffer.applyChg(msg));
-          break;
-        case 'noActiveEditor':
-          _results.push(buffer = null);
-          break;
-        default:
-          _results.push(console.log('responder, unknown msg cmd:', msg));
-      }
+  api.recvFromParent('responder', function(msg) {
+    console.log('----', msg.cmd, '----');
+    switch (msg.cmd) {
+      case 'register':
+        return providers.push(new Provider(api, msg.name, msg.path));
+      case 'newEditor':
+        return buffer = new ResponderBuffer(msg.text);
+      case 'bufferEdit':
+        return buffer.applyChg(msg);
+      case 'noActiveEditor':
+        return buffer = null;
+      default:
+        return console.log('responder, unknown msg cmd:', msg);
     }
-    return _results;
   });
+
+  console.log('hello from responder process');
 
 }).call(this);

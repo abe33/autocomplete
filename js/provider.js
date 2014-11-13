@@ -5,62 +5,27 @@
  */
 
 (function() {
-  var AutocompleteComm, Provider, comm, pathUtil;
-
-  pathUtil = require('util');
-
-  AutocompleteComm = require('autocomplete-api').AutocompleteComm;
-
-  comm = new AutocompleteComm;
+  var Provider;
 
   module.exports = Provider = (function() {
-    function Provider(path) {
-      var stdoutSub;
-      this.name = pathUtil.basename(path);
-      this.module(require(path));
-      this.child = spawn('node', [path]);
-      stdoutSub = child.stdout.on('data', (function(_this) {
-        return function(data) {
-          var obj, recvObjs, _i, _len, _results;
-          recvObjs = comm.recvDemuxObj(data, function(err, line) {
-            return console.log('provider', this.name + ':', line);
-          });
-          _results = [];
-          for (_i = 0, _len = recvObjs.length; _i < _len; _i++) {
-            obj = recvObjs[_i];
-            _results.push(_this.recv(obj));
-          }
-          return _results;
+    function Provider(api, name, path) {
+      this.api = api;
+      this.name = name;
+      this.path = path;
+      this.process = this.api.createProcess(this.path, 'responder', 'provider ' + this.name);
+      this.api.recvFromChild(this.process, 'provider ' + this.name, (function(_this) {
+        return function(message) {
+          return console.log('message from provider:', message);
         };
       })(this));
-      this.subs = [stdoutSub];
-      comm.handleProcessErrors(this.subs, child, 'Responder');
     }
 
-    Provider.prototype.send = function(msg) {
-      return this.child.stdin.write(JSON.stringify({
-        msg: msg
-      }) + '\n');
-    };
-
-    Provider.prototype.recv = function(msg) {
-      return console.log('MSG from provider:', msg);
+    Provider.prototype.send = function(message) {
+      return this.api.sendToChild(this.process, message);
     };
 
     Provider.prototype.destroy = function() {
-      var subscription, _i, _len, _ref;
-      this.child.disconnect();
-      _ref = this.subs;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        subscription = _ref[_i];
-        if (typeof subscription.off === "function") {
-          subscription.off();
-        }
-        if (typeof subscription.dispose === "function") {
-          subscription.dispose();
-        }
-      }
-      return delete this.subs;
+      return this.process.disconnect();
     };
 
     return Provider;

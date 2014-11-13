@@ -2,38 +2,17 @@
   lib/responder/provider.coffee
 ###
 
-pathUtil = require 'util'
-{AutocompleteComm} = require 'autocomplete-api'
-comm = new AutocompleteComm
 
 module.exports =
 class Provider
   
-  constructor: (path) ->
-    @name = pathUtil.basename path
-    @module require path
+  constructor: (@api, @name, @path) ->
+    @process = @api.createProcess @path, 'responder', 'provider ' + @name
     
-    @child = spawn 'node', [path]
-    
-    stdoutSub = child.stdout.on 'data', (data) => 
-      recvObjs = comm.recvDemuxObj data, (err, line) ->  
-        console.log 'provider', @name + ':', line
-      for obj in recvObjs then @recv obj
-          
-    @subs = [stdoutSub]
-    comm.handleProcessErrors @subs, child, 'Responder'
-    
-  send: (msg) ->
-    # console.log 'processIO send', msg
-    @child.stdin.write JSON.stringify({msg}) + '\n'
+    @api.recvFromChild @process, 'provider ' + @name, (message) =>
+      console.log 'message from provider:', message
+        
+  send: (message) -> @api.sendToChild @process, message
 
-  recv: (msg) ->
-    console.log 'MSG from provider:', msg
-
-  destroy: ->
-    @child.disconnect()
-    for subscription in @subs
-      subscription.off?()
-      subscription.dispose?()
-    delete @subs
+  destroy: -> @process.disconnect()
   

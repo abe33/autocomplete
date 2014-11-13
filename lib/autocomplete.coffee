@@ -1,7 +1,6 @@
-
-_      = require 'underscore-plus'
-semver = require 'semver'
-AutocompleteView = require './autocomplete-view'
+###
+  lib/autocomplete.coffee
+###
 
 module.exports =
   configDefaults:
@@ -9,11 +8,17 @@ module.exports =
 
   autocompleteViews: []
   editorSubscription: null
-  version: require('../package.json').version
 
   activate: ->
-    @responderIO = require './responder-io'
+    console.log 'autocomplete activate'
+    Api  = require './api/api'
+    @api = new Api
+    ResponderMgr  = new require './responder/responder-mgr'
+    @responderMgr = new ResponderMgr(@api)
     
+    # _ = require 'underscore-plus'
+    # AutocompleteView = require './autocomplete-view'
+    # 
     # @editorSubscription = atom.workspaceView.eachEditorView (editor) =>
     #   if editor.attached and not editor.mini
     #     autocompleteView = new AutocompleteView(editor)
@@ -22,12 +27,19 @@ module.exports =
     #       _.remove(@autocompleteViews, autocompleteView)
     #     @autocompleteViews.push(autocompleteView)
 
-  versionMatch: (expectedVersion) -> semver.satisfies(@version, expectedVersion)
+  registerProvider: (options) ->
+    semver  = require 'semver'
+    version = require('../package.json').version
+    if not semver.satisfies version, options.autocompleteVersion
+      console.log 'The package at', options.modulePath, 
+                  'requires autocomplete package version', options.autocompleteVersion,
+                  'but this version is', version
+      return
+    options.apiPath = @api.getApiPath()
+    @api.sendToChild @responderMgr.getProcess(), {cmd: 'register', options}
 
-  registerProvider: (name, path) ->
-    @responderIO.registerProvider name, path
-    
   deactivate: ->
+    @responderMgr.destroy()
     @editorSubscription?.off()
     @editorSubscription = null
     @autocompleteViews.forEach (autocompleteView) -> autocompleteView.remove()
