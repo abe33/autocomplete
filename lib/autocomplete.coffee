@@ -10,11 +10,11 @@ module.exports =
   editorSubscription: null
 
   activate: ->
-    console.log 'autocomplete activate'
-    Api  = require './api/api'
-    @api = new Api
-    ResponderMgr  = new require './responder/responder-mgr'
-    @responderMgr = new ResponderMgr(@api)
+    process.nextTick =>
+      Api  = require '../js/api'
+      @api = new Api
+      ResponderMgr  = new require './responder/responder-mgr'
+      @responderMgr = new ResponderMgr(@api)
     
     # _ = require 'underscore-plus'
     # AutocompleteView = require './autocomplete-view'
@@ -35,7 +35,6 @@ module.exports =
                   'requires autocomplete package version', options.autocompleteVersion,
                   'but this version is', version
       return
-    options.apiPath = @api.getApiPath()
     @api.sendToChild @responderMgr.getProcess(), {cmd: 'register', options}
 
   deactivate: ->

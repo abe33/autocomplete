@@ -6,7 +6,6 @@
 
 {spawn} = require 'child_process'
 _       = require 'underscore-plus'
-apiPath = require('path').resolve __dirname, '../../js/api'
 
 module.exports =
 class Api
@@ -15,7 +14,7 @@ class Api
     
   createProcess: (path, parentName, childName) ->
     
-    childProcess = spawn 'node', [path, apiPath]
+    childProcess = spawn 'node', [path, __filename]
     
     procErr = (src, event, msg) =>
       msg ?= event
@@ -78,6 +77,8 @@ class Api
       childProcess.stdin.write JSON.stringify({msg}) + '\n'
     catch e
       console.log 'Autocomplete api sendToChild error', e.message
+
+  on: (task, callback) ->
 
   destroy: ->
     for subscription in @subs

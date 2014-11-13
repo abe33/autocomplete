@@ -12,8 +12,8 @@
       this.api = api;
       this.name = name;
       this.path = path;
-      this.process = this.api.createProcess(this.path, 'responder', 'provider ' + this.name);
-      this.api.recvFromChild(this.process, 'provider ' + this.name, (function(_this) {
+      this.process = this.api.createProcess(this.path, 'responder', this.name);
+      this.api.recvFromChild(this.process, this.name, (function(_this) {
         return function(message) {
           return console.log('message from provider:', message);
         };

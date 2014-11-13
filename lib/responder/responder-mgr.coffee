@@ -4,21 +4,19 @@
   It provides the interface from atom to the responder process
 ###
 
-_            = require 'underscore-plus'
-Api          = require '../api/api'
+_   = require 'underscore-plus'
+Api = require '../api/api'
 
 module.exports =
 class ResponderMgr 
   
   constructor: (@api) ->
-    
-    for provider in atom.views.providers
-      if (TextEditor = provider.modelConstructor).name is 'TextEditor'
-        break
-    
+    {TextEditorView} = require 'atom'
+    TextEditor = new TextEditorView({}).getEditor().constructor
     @subs = []
     
-    @responder = @api.createProcess 'js/responder-process.js', 'atom', 'responder'
+    execPath = require('path').resolve __dirname, '../../js/responder-process.js'
+    @responder = @api.createProcess execPath, 'atom', 'responder'
     
     @api.recvFromChild @responder, 'responder', (message) ->
       console.log 'DEBUG: received this from the responder process:\n', message
@@ -44,6 +42,8 @@ class ResponderMgr
           cursor: editor.getLastCursor().getBufferPosition()
         
       @subs.push editorView.on 'editor:will-be-removed', -> editorSub.off()
+      
+  getProcess: -> @responder
     
   destroy: ->
     @responder.disconnect()

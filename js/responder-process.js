@@ -27,7 +27,7 @@
     console.log('----', msg.cmd, '----');
     switch (msg.cmd) {
       case 'register':
-        return providers.push(new Provider(api, msg.name, msg.path));
+        return providers.push(new Provider(api, msg.options.providerName, msg.options.providerPath));
       case 'newEditor':
         return buffer = new ResponderBuffer(msg.text);
       case 'bufferEdit':
@@ -39,6 +39,6 @@
     }
   });
 
-  console.log('hello from responder process');
+  console.log('hello');
 
 }).call(this);

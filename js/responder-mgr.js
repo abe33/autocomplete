@@ -15,17 +15,13 @@
 
   module.exports = ResponderMgr = (function() {
     function ResponderMgr(api) {
-      var TextEditor, provider, _i, _len, _ref;
+      var TextEditor, TextEditorView, execPath;
       this.api = api;
-      _ref = atom.views.providers;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        provider = _ref[_i];
-        if ((TextEditor = provider.modelConstructor).name === 'TextEditor') {
-          break;
-        }
-      }
+      TextEditorView = require('atom').TextEditorView;
+      TextEditor = new TextEditorView({}).getEditor().constructor;
       this.subs = [];
-      this.responder = this.api.createProcess('js/responder-process.js', 'atom', 'responder');
+      execPath = require('path').resolve(__dirname, '../../js/responder-process.js');
+      this.responder = this.api.createProcess(execPath, 'atom', 'responder');
       this.api.recvFromChild(this.responder, 'responder', function(message) {
         return console.log('DEBUG: received this from the responder process:\n', message);
       });
@@ -63,6 +59,10 @@
         };
       })(this)));
     }
+
+    ResponderMgr.prototype.getProcess = function() {
+      return this.responder;
+    };
 
     ResponderMgr.prototype.destroy = function() {
       var subscription, _i, _len, _ref;

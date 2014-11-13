@@ -16,10 +16,11 @@ api.recvFromParent 'responder', (msg) ->
   console.log '----', msg.cmd, '----'
   # if msg.text then console.log msg.text.replace(/\n/g, '\\n')[0..80]
   switch msg.cmd
-    when 'register'       then providers.push new Provider api, msg.name, msg.path
+    when 'register' then providers.push \
+      new Provider api, msg.options.providerName, msg.options.providerPath
     when 'newEditor'      then buffer = new ResponderBuffer msg.text
     when 'bufferEdit'     then buffer.applyChg msg
     when 'noActiveEditor' then buffer = null
     else console.log 'responder, unknown msg cmd:', msg
 
-console.log 'hello from responder process'
+console.log 'hello'

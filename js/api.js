@@ -7,14 +7,12 @@
  */
 
 (function() {
-  var Api, apiPath, spawn, _,
+  var Api, spawn, _,
     __slice = [].slice;
 
   spawn = require('child_process').spawn;
 
   _ = require('underscore-plus');
-
-  apiPath = require('path').resolve(__dirname, '../../js/api');
 
   module.exports = Api = (function() {
     function Api() {
@@ -23,7 +21,7 @@
 
     Api.prototype.createProcess = function(path, parentName, childName) {
       var childProcess, procErr;
-      childProcess = spawn('node', [path, apiPath]);
+      childProcess = spawn('node', [path, __filename]);
       procErr = (function(_this) {
         return function(src, event, msg) {
           if (msg == null) {
@@ -127,6 +125,8 @@
         return console.log('Autocomplete api sendToChild error', e.message);
       }
     };
+
+    Api.prototype.on = function(task, callback) {};
 
     Api.prototype.destroy = function() {
       var subscription, _i, _len, _ref;
