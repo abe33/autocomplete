@@ -16,20 +16,20 @@ class Api
     
     childProcess = spawn 'node', [path, __filename]
     
-    procErr = (src, event, msg) =>
+    procEvt = (src, event, msg) =>
       msg ?= event
       @subs.push src.on event, (data) ->
         console.log parentName, 'received process', msg, 'from', 
           (if data then [childName + ':', data.toString()] \
                    else [childName])...
     
-    procErr childProcess,        'error'
-    procErr childProcess,        'disconnect'
-    procErr childProcess,        'exit'
-    procErr childProcess,        'close'
-    procErr childProcess.stdout, 'end',  'stdout end'
-    procErr childProcess.stderr, 'data', 'stderr'
-    procErr childProcess.stderr, 'end',  'stderr end'
+    procEvt childProcess,        'error'
+    procEvt childProcess,        'disconnect'
+    procEvt childProcess,        'exit'
+    procEvt childProcess,        'close'
+    procEvt childProcess.stdout, 'end',  'stdout end'
+    procEvt childProcess.stderr, 'data', 'stderr'
+    procEvt childProcess.stderr, 'end',  'stderr end'
     
     childProcess
   
@@ -37,8 +37,7 @@ class Api
     lines = data.toString().split '\n'
     if lines.length is 1
       partialData += lines[0]
-      callback partialData, []
-      return
+      return [partialData, []]
     lines[0] = partialData + lines[0]
     partialData = _.last lines
     lines = _.initial lines

@@ -11,5 +11,10 @@
     "semver": "~2.3.0",
     "underscore-plus": "1.x",
     "atom-utils": "*"
+  },
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "grunt-contrib-coffee": "^0.12.0",
+    "grunt-contrib-watch": "^0.6.1"
   }
 }

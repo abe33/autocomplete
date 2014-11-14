@@ -11,10 +11,8 @@ module.exports =
 
   activate: ->
     process.nextTick =>
-      Api  = require '../js/api'
-      @api = new Api
-      ResponderMgr  = new require './responder/responder-mgr'
-      @responderMgr = new ResponderMgr(@api)
+      @api          = new (require('../js/api'))
+      @responderMgr = new (require('./responder/responder-mgr'))(@api)
     
     # _ = require 'underscore-plus'
     # AutocompleteView = require './autocomplete-view'

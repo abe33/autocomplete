@@ -2,10 +2,9 @@
   lib/responder/provider.coffee
 ###
 
-
 module.exports =
 class Provider
-  
+   
   constructor: (@api, @name, @path) ->
     
     @process = @api.createProcess @path, 'responder', @name

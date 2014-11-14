@@ -1,51 +1,31 @@
+After loading 146 I have a problem starting atom.  I use `atom --dev .` in my console and instead of just starting atom it shows debug stuff I'm not familiar with and never returns to a prompt.  It runs in the foreground instead of separately.  This also happens in safe mode.
 
-I'm getting an error often although Atom seems to keep working.  This is new to 145
+This is what I see ...
+
+```
+C:\apps\autocomplete>App load time: 246ms
+[9516:1113/150212:INFO:renderer_main.cc(204)] Renderer process started
+[9652:1113/150214:INFO:CONSOLE(92)] "Download the React DevTools for a better development experience: http://fb.me/react-devtools"
+, source: c:\Chocolatey\lib\atom.0.146.0\tools\atom\resources\app\node_modules\react-atom-fork\lib\React.js (92)
+[9652:1113/150218:INFO:CONSOLE(46)] "Window load time: 4921ms", source: file:///C:/Chocolatey/lib/atom.0.146.0/tools/atom/resource
+s/app/static/index.js (46)
+[9652:1113/150219:INFO:CONSOLE(63)] "RESPONDER:", source: C:\apps\autocomplete\js\api.js (63)
+[9652:1113/150219:INFO:CONSOLE(63)] "RESPONDER:", source: C:\apps\autocomplete\js\api.js (63)
+[9652:1113/150219:INFO:CONSOLE(63)] "RESPONDER:", source: C:\apps\autocomplete\js\api.js (63)
+```
 
 ---
-## Error
-
-```
-TypeError: undefined is not a function
-  at C:\apps\autocomplete\lib\responder-io.coffee:27:28
-  at Emitter.module.exports.Emitter.emit (c:\Chocolatey\lib\atom.0.145.0\tools\atom\resources\app\node_modules\event-kit\lib\emitter.js:71:11)
-  at c:\Chocolatey\lib\atom.0.145.0\tools\atom\resources\app\src\pane-container.js:342:34
-  at Emitter.module.exports.Emitter.emit (c:\Chocolatey\lib\atom.0.145.0\tools\atom\resources\app\node_modules\event-kit\lib\emitter.js:71:11)
-  at Pane.module.exports.Pane.setActiveItem (c:\Chocolatey\lib\atom.0.145.0\tools\atom\resources\app\src\pane.js:254:22)
-  at Pane.module.exports.Pane.activateItem (c:\Chocolatey\lib\atom.0.145.0\tools\atom\resources\app\src\pane.js:318:21)
-  at Pane.module.exports.Pane.activateItemAtIndex (c:\Chocolatey\lib\atom.0.145.0\tools\atom\resources\app\src\pane.js:312:19)
-  at Pane.module.exports.Pane.activatePreviousItem (c:\Chocolatey\lib\atom.0.145.0\tools\atom\resources\app\src\pane.js:283:21)
-  at Pane.module.exports.Pane.removeItem (c:\Chocolatey\lib\atom.0.145.0\tools\atom\resources\app\src\pane.js:383:16)
-  at Pane.module.exports.Pane.destroyItem (c:\Chocolatey\lib\atom.0.145.0\tools\atom\resources\app\src\pane.js:436:16)
-  at PaneView._results.push._this.(anonymous function) [as destroyItem] (c:\Chocolatey\lib\atom.0.145.0\tools\atom\resources\app\node_modules\delegato\lib\delegator.js:67:61)
-  at HTMLDivElement.<anonymous> (c:\Chocolatey\lib\atom.0.145.0\tools\atom\resources\app\node_modules\tabs\lib\tab-bar-view.js:169:22)
-  at HTMLDivElement.handler (c:\Chocolatey\lib\atom.0.145.0\tools\atom\resources\app\src\space-pen-extensions.js:110:34)
-  at HTMLUListElement.jQuery.event.dispatch (c:\Chocolatey\lib\atom.0.145.0\tools\atom\resources\app\node_modules\space-pen\vendor\jquery.js:4681:9)
-  at HTMLUListElement.elemData.handle (c:\Chocolatey\lib\atom.0.145.0\tools\atom\resources\app\node_modules\space-pen\vendor\jquery.js:4359:46)
-
-```
 
 ## Repro Steps
 
-1. [First Step]
-2. [Second Step]
-3. [and so on...]
+1. cd to project directory
+2. `atom --dev .`
 
-**Expected:** [Enter expected behavior here]
-**Actual:** [Enter actual behavior here]
-
-## Command History:
-```
-     -0:06.5 editor:display-updated (atom-text-editor.editor.editor-colors)
-     -0:05.0 cursor:moved (atom-text-editor.editor.editor-colors)
-     -0:05.0 selection:changed (atom-text-editor.editor.editor-colors)
-  2x -0:05.0 editor:display-updated (atom-text-editor.editor.editor-colors)
-     -0:00.9 pane:before-item-destroyed (atom-pane.pane.active)
-     -0:00.9 pane-container:active-pane-item-changed (atom-pane-container.panes)
-     -0:00.0 Uncaught TypeError: undefined is not a function
-```
+**Expected:** Return to prompt and load atom
+**Actual:** see above
 
 ## Versions
-* **Atom:**       0.145.0
+* **Atom:**       0.146.0
 * **Atom-Shell:** 0.19.1
 * **OS:**         Microsoft Windows 8.1 Pro with Media Center
 * **Misc**
