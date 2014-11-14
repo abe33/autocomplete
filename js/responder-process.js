@@ -4,17 +4,13 @@
  */
 
 (function() {
-  var Api, Provider, ResponderBuffer, api, buffer, providers, send;
+  var Provider, api, buffer, providers, send;
 
-  Api = require(process.argv[2]);
+  api = new (require(process.argv[2]))('responder');
+
+  buffer = new (require('./responder-buffer'));
 
   Provider = require('./provider');
-
-  ResponderBuffer = require('./responder-buffer');
-
-  api = new Api;
-
-  buffer = new ResponderBuffer;
 
   providers = [];
 
@@ -23,6 +19,10 @@
   };
 
   api.recvFromParent('responder', function(msg) {
+    var provider, _i, _len;
+    if (!providers) {
+      return;
+    }
     console.log('----', msg.cmd, '----');
     switch (msg.cmd) {
       case 'register':
@@ -33,6 +33,16 @@
         return buffer.applyChg(msg);
       case 'noActiveEditor':
         return buffer = null;
+      case 'kill':
+        for (_i = 0, _len = providers.length; _i < _len; _i++) {
+          provider = providers[_i];
+          console.log('Killing', provider.getName());
+          provider.destroy();
+        }
+        providers = null;
+        return setTimeout((function() {
+          return process.exit(0);
+        }), 300);
       default:
         return console.log('responder, unknown msg cmd:', msg);
     }

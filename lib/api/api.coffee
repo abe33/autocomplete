@@ -9,8 +9,12 @@ _       = require 'underscore-plus'
 
 module.exports =
 class Api
-  constructor: ->
-    @subs = []
+  constructor: (name)->
+    process.stdin.resume();
+    process.on 'SIGTERM', -> 
+      if name then console.log 'Exiting', name + 'process'
+      process.exit 0
+    @subs = []    
     
   createProcess: (path, parentName, childName) ->
     
@@ -24,12 +28,13 @@ class Api
                    else [childName])...
     
     procEvt childProcess,        'error'
+    procEvt childProcess,        'message'
     procEvt childProcess,        'disconnect'
-    procEvt childProcess,        'exit'
     procEvt childProcess,        'close'
-    procEvt childProcess.stdout, 'end',  'stdout end'
     procEvt childProcess.stderr, 'data', 'stderr'
-    procEvt childProcess.stderr, 'end',  'stderr end'
+    # procEvt childProcess,        'exit'
+    # procEvt childProcess.stdout, 'end',  'stdout end'
+    # procEvt childProcess.stderr, 'end',  'stderr end'
     
     childProcess
   

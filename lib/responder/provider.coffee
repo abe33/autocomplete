@@ -11,8 +11,11 @@ class Provider
     
     @api.recvFromChild @process, @name, (message) =>
       console.log 'message from provider:', message
+  
+  getName: -> @name
         
   send: (message) -> @api.sendToChild @process, message
 
-  destroy: -> @process.disconnect()
-  
+  destroy: -> 
+    @process.kill 'SIGTERM'
+    @process = null

@@ -14,7 +14,14 @@
   _ = require('underscore-plus');
 
   module.exports = Api = (function() {
-    function Api() {
+    function Api(name) {
+      process.stdin.resume();
+      process.on('SIGTERM', function() {
+        if (name) {
+          console.log('Exiting', name + 'process');
+        }
+        return process.exit(0);
+      });
       this.subs = [];
     }
 
@@ -32,12 +39,10 @@
         };
       })(this);
       procEvt(childProcess, 'error');
+      procEvt(childProcess, 'message');
       procEvt(childProcess, 'disconnect');
-      procEvt(childProcess, 'exit');
       procEvt(childProcess, 'close');
-      procEvt(childProcess.stdout, 'end', 'stdout end');
       procEvt(childProcess.stderr, 'data', 'stderr');
-      procEvt(childProcess.stderr, 'end', 'stderr end');
       return childProcess;
     };
 

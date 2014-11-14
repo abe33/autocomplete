@@ -4,7 +4,8 @@
 
 module.exports =
   configDefaults:
-    includeCompletionsFromAllBuffers: false
+    includeCompletionsFromAllBuffers:        no
+    includeCompletionsFromAllFilesInProject: no
 
   autocompleteViews: []
   editorSubscription: null
@@ -25,16 +26,8 @@ module.exports =
     #       _.remove(@autocompleteViews, autocompleteView)
     #     @autocompleteViews.push(autocompleteView)
 
-  registerProvider: (options) ->
-    semver  = require 'semver'
-    version = require('../package.json').version
-    if not semver.satisfies version, options.autocompleteVersion
-      console.log 'The package at', options.modulePath, 
-                  'requires autocomplete package version', options.autocompleteVersion,
-                  'but this version is', version
-      return
-    @api.sendToChild @responderMgr.getProcess(), {cmd: 'register', options}
-
+  registerProvider: (options) -> @responderMgr.registerProvider options
+    
   deactivate: ->
     @responderMgr.destroy()
     @editorSubscription?.off()

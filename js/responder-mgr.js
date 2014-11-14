@@ -59,13 +59,24 @@
       })(this)));
     }
 
-    ResponderMgr.prototype.getProcess = function() {
-      return this.responder;
+    ResponderMgr.prototype.registerProvider = function(options) {
+      var version;
+      version = require('../../package.json').version;
+      if (!require('semver').satisfies(version, options.autocompleteVersion)) {
+        console.log('The package at', options.modulePath, 'requires autocomplete package version', options.autocompleteVersion, 'but this version is', version);
+        return;
+      }
+      return this.api.sendToChild(this.responder, {
+        cmd: 'register',
+        options: options
+      });
     };
 
     ResponderMgr.prototype.destroy = function() {
       var subscription, _i, _len, _ref;
-      this.responder.disconnect();
+      this.api.sendToChild(this.responder, {
+        cmd: 'kill'
+      });
       _ref = this.subs;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         subscription = _ref[_i];

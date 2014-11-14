@@ -19,12 +19,17 @@
       })(this));
     }
 
+    Provider.prototype.getName = function() {
+      return this.name;
+    };
+
     Provider.prototype.send = function(message) {
       return this.api.sendToChild(this.process, message);
     };
 
     Provider.prototype.destroy = function() {
-      return this.process.disconnect();
+      this.process.kill('SIGTERM');
+      return this.process = null;
     };
 
     return Provider;

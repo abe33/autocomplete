@@ -43,12 +43,19 @@ class ResponderMgr
         
       @subs.push editorView.on 'editor:will-be-removed', -> editorSub.off()
       
-  getProcess: -> @responder
-    
+  registerProvider: (options) ->
+    version = require('../../package.json').version
+    if not require('semver').satisfies version, options.autocompleteVersion
+      console.log 'The package at', options.modulePath, 
+                  'requires autocomplete package version', options.autocompleteVersion,
+                  'but this version is', version
+      return
+    @api.sendToChild @responder, {cmd: 'register', options}
+  
   destroy: ->
-    @responder.disconnect()
+    @api.sendToChild @responder, cmd: 'kill'
     for subscription in @subs
       subscription.off?()
       subscription.dispose?()
     delete @subs
-        
+  
