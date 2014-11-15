@@ -16,12 +16,15 @@
   module.exports = Api = (function() {
     function Api(name) {
       process.stdin.resume();
-      process.on('SIGTERM', function() {
-        if (name) {
-          console.log('Exiting', name + 'process');
-        }
-        return process.exit(0);
-      });
+      process.on('SIGTERM', (function(_this) {
+        return function() {
+          if (name) {
+            console.log('Exiting', name + 'process');
+          }
+          process.exit(0);
+          return _this.childProcessTerminated = true;
+        };
+      })(this));
       this.subs = [];
     }
 
@@ -119,6 +122,9 @@
 
     Api.prototype.sendToChild = function(childProcess, msg) {
       var e;
+      if (this.childProcessTerminated) {
+        return;
+      }
       try {
         return childProcess.stdin.write(JSON.stringify({
           msg: msg

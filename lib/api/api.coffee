@@ -11,9 +11,10 @@ module.exports =
 class Api
   constructor: (name)->
     process.stdin.resume();
-    process.on 'SIGTERM', -> 
+    process.on 'SIGTERM', => 
       if name then console.log 'Exiting', name + 'process'
       process.exit 0
+      @childProcessTerminated = yes
     @subs = []    
     
   createProcess: (path, parentName, childName) ->
@@ -77,6 +78,7 @@ class Api
       console.log 'Autocomplete api sendToParent error', e.message
     
   sendToChild: (childProcess, msg) ->
+    if @childProcessTerminated then return
     try
       childProcess.stdin.write JSON.stringify({msg}) + '\n'
     catch e

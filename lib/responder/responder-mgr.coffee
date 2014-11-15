@@ -21,20 +21,36 @@ class ResponderMgr
     @api.recvFromChild @responder, 'responder', (message) ->
       console.log 'DEBUG: received this from the responder process:\n', message
       
+    setActiveEditorCmd = (editor) =>
+        if editor instanceof TextEditor
+          if editor isnt @currentEditor
+            @currentEditor = editor
+            @api.sendToChild @responder, 
+              cmd:    'newActiveEditor'
+              title:   editor.getTitle()
+              path:    editor.getPath()
+              text:    editor.getText()
+              grammar: editor.getGrammar().scopeName
+              cursor:  editor.getLastCursor().getBufferPosition()
+        else if @currentEditor
+          @api.sendToChild @responder, cmd: 'noActiveEditor' 
+          @currentEditor = null
+      
     @subs.push atom.workspaceView.eachEditorView (editorView) =>
       if not editorView.attached or editorView.mini then return
+      editor = editorView.getModel()
       
-      @subs.push atom.workspace.onDidChangeActivePaneItem (editor) =>
-        if editor instanceof TextEditor
-          @api.sendToChild @responder, 
-            cmd:    'newEditor'
-            path:   editor.getPath()
-            text:   editor.getText()
-            cursor: editor.getLastCursor().getBufferPosition()
-        else
-          @api.sendToChild @responder,  cmd: 'noActiveEditor' 
+      # todo
+      # grammar.onDidUpdate(callback) 
+      # editor.observeGrammar(callback) 
+      # editor.onDidChangeGrammar(callback) 
+      # editor.onDidDestroy(callback) 
+      
+      if editorView.getPaneView().is '.active' then setActiveEditorCmd editor
+      
+      @subs.push atom.workspace.onDidChangeActivePaneItem setActiveEditorCmd
           
-      @subs.push editorSub = (editor = editorView.getModel()).onDidChange (evt) =>
+      @subs.push editorSub = editor.onDidChange (evt) =>
         @api.sendToChild @responder, 
           cmd:    'bufferEdit' 
           text:   editor.getTextInBufferRange [[evt.start, 0],[evt.end+1, 0]]
@@ -54,6 +70,7 @@ class ResponderMgr
   
   destroy: ->
     @api.sendToChild @responder, cmd: 'kill'
+    @api.destroy()
     for subscription in @subs
       subscription.off?()
       subscription.dispose?()

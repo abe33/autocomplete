@@ -14,7 +14,7 @@
 
   module.exports = ResponderMgr = (function() {
     function ResponderMgr(api) {
-      var TextEditor, TextEditorView, execPath;
+      var TextEditor, TextEditorView, execPath, setActiveEditorCmd;
       this.api = api;
       TextEditorView = require('atom').TextEditorView;
       TextEditor = new TextEditorView({}).getEditor().constructor;
@@ -24,27 +24,40 @@
       this.api.recvFromChild(this.responder, 'responder', function(message) {
         return console.log('DEBUG: received this from the responder process:\n', message);
       });
+      setActiveEditorCmd = (function(_this) {
+        return function(editor) {
+          if (editor instanceof TextEditor) {
+            if (editor !== _this.currentEditor) {
+              _this.currentEditor = editor;
+              return _this.api.sendToChild(_this.responder, {
+                cmd: 'newActiveEditor',
+                title: editor.getTitle(),
+                path: editor.getPath(),
+                text: editor.getText(),
+                grammar: editor.getGrammar().scopeName,
+                cursor: editor.getLastCursor().getBufferPosition()
+              });
+            }
+          } else if (_this.currentEditor) {
+            _this.api.sendToChild(_this.responder, {
+              cmd: 'noActiveEditor'
+            });
+            return _this.currentEditor = null;
+          }
+        };
+      })(this);
       this.subs.push(atom.workspaceView.eachEditorView((function(_this) {
         return function(editorView) {
           var editor, editorSub;
           if (!editorView.attached || editorView.mini) {
             return;
           }
-          _this.subs.push(atom.workspace.onDidChangeActivePaneItem(function(editor) {
-            if (editor instanceof TextEditor) {
-              return _this.api.sendToChild(_this.responder, {
-                cmd: 'newEditor',
-                path: editor.getPath(),
-                text: editor.getText(),
-                cursor: editor.getLastCursor().getBufferPosition()
-              });
-            } else {
-              return _this.api.sendToChild(_this.responder, {
-                cmd: 'noActiveEditor'
-              });
-            }
-          }));
-          _this.subs.push(editorSub = (editor = editorView.getModel()).onDidChange(function(evt) {
+          editor = editorView.getModel();
+          if (editorView.getPaneView().is('.active')) {
+            setActiveEditorCmd(editor);
+          }
+          _this.subs.push(atom.workspace.onDidChangeActivePaneItem(setActiveEditorCmd));
+          _this.subs.push(editorSub = editor.onDidChange(function(evt) {
             return _this.api.sendToChild(_this.responder, {
               cmd: 'bufferEdit',
               text: editor.getTextInBufferRange([[evt.start, 0], [evt.end + 1, 0]]),
@@ -77,6 +90,7 @@
       this.api.sendToChild(this.responder, {
         cmd: 'kill'
       });
+      this.api.destroy();
       _ref = this.subs;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         subscription = _ref[_i];
