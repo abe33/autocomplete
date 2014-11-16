@@ -2,16 +2,16 @@
   lib/responder/responder-process.coffee
 ###
 
-api             = new (require(process.argv[2]))('responder')
+ipc             = new (require(process.argv[2]))('responder')
 ResponderBuffer = require './responder-buffer'
 Provider        = require './provider'
   
 buffer = null
 providers = []
 
-send = (msg) -> api.sendToParent msg
+send = (msg) -> ipc.sendToParent msg
 
-api.recvFromParent 'responder', (msg) ->
+ipc.recvFromParent 'responder', (msg) ->
   if not providers then return
   {options} = msg
    
@@ -20,7 +20,7 @@ api.recvFromParent 'responder', (msg) ->
     
   switch msg.cmd
     when 'register' 
-      providers.push (provider = new Provider api, options)
+      providers.push (provider = new Provider ipc, options)
       # console.log 'register:', provider.getName(), msg
       if buffer
         console.log 'register startTask parse', 

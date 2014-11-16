@@ -6,22 +6,22 @@
  */
 
 (function() {
-  var Api, ResponderMgr, _;
+  var ResponderMgr, ipc, _;
 
   _ = require('underscore-plus');
 
-  Api = require('../api/api');
+  ipc = require('../ipc/ipc');
 
   module.exports = ResponderMgr = (function() {
-    function ResponderMgr(api) {
+    function ResponderMgr(ipc) {
       var TextEditor, TextEditorView, execPath, setActiveEditorCmd;
-      this.api = api;
+      this.ipc = ipc;
       TextEditorView = require('atom').TextEditorView;
       TextEditor = new TextEditorView({}).getEditor().constructor;
       this.subs = [];
       execPath = require('path').resolve(__dirname, '../../js/responder-process.js');
-      this.responder = this.api.createProcess(execPath, 'atom', 'responder');
-      this.api.recvFromChild(this.responder, 'responder', function(message) {
+      this.responder = this.ipc.createProcess(execPath, 'atom', 'responder');
+      this.ipc.recvFromChild(this.responder, 'responder', function(message) {
         return console.log('DEBUG: received this from the responder process:\n', message);
       });
       setActiveEditorCmd = (function(_this) {
@@ -29,7 +29,7 @@
           if (editor instanceof TextEditor) {
             if (editor !== _this.currentEditor) {
               _this.currentEditor = editor;
-              return _this.api.sendToChild(_this.responder, {
+              return _this.ipc.sendToChild(_this.responder, {
                 cmd: 'newActiveEditor',
                 title: editor.getTitle(),
                 path: editor.getPath(),
@@ -39,7 +39,7 @@
               });
             }
           } else if (_this.currentEditor) {
-            _this.api.sendToChild(_this.responder, {
+            _this.ipc.sendToChild(_this.responder, {
               cmd: 'noActiveEditor'
             });
             return _this.currentEditor = null;
@@ -58,7 +58,7 @@
           }
           _this.subs.push(atom.workspace.onDidChangeActivePaneItem(setActiveEditorCmd));
           _this.subs.push(editorSub = editor.onDidChange(function(evt) {
-            return _this.api.sendToChild(_this.responder, {
+            return _this.ipc.sendToChild(_this.responder, {
               cmd: 'bufferEdit',
               text: editor.getTextInBufferRange([[evt.start, 0], [evt.end + 1, 0]]),
               event: evt,
@@ -79,7 +79,7 @@
         console.log('The package at', options.modulePath, 'requires autocomplete package version', options.autocompleteVersion, 'but this version is', version);
         return;
       }
-      return this.api.sendToChild(this.responder, {
+      return this.ipc.sendToChild(this.responder, {
         cmd: 'register',
         options: options
       });
@@ -87,10 +87,10 @@
 
     ResponderMgr.prototype.destroy = function() {
       var subscription, _i, _len, _ref;
-      this.api.sendToChild(this.responder, {
+      this.ipc.sendToChild(this.responder, {
         cmd: 'kill'
       });
-      this.api.destroy();
+      this.ipc.destroy();
       _ref = this.subs;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         subscription = _ref[_i];

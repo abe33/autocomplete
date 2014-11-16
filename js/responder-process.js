@@ -4,9 +4,9 @@
  */
 
 (function() {
-  var Provider, ResponderBuffer, api, buffer, providers, send;
+  var Provider, ResponderBuffer, buffer, ipc, providers, send;
 
-  api = new (require(process.argv[2]))('responder');
+  ipc = new (require(process.argv[2]))('responder');
 
   ResponderBuffer = require('./responder-buffer');
 
@@ -17,10 +17,10 @@
   providers = [];
 
   send = function(msg) {
-    return api.sendToParent(msg);
+    return ipc.sendToParent(msg);
   };
 
-  api.recvFromParent('responder', function(msg) {
+  ipc.recvFromParent('responder', function(msg) {
     var options, provider, _i, _j, _len, _len1, _results;
     if (!providers) {
       return;
@@ -29,7 +29,7 @@
     console.log('----', msg.cmd, '----');
     switch (msg.cmd) {
       case 'register':
-        providers.push((provider = new Provider(api, options)));
+        providers.push((provider = new Provider(ipc, options)));
         if (buffer) {
           console.log('register startTask parse', provider.getName(), buffer.getGrammar(), buffer.getText().length);
           return provider.startTask('parse', buffer.getGrammar(), {

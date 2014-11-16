@@ -7,13 +7,13 @@
   var Provider;
 
   module.exports = Provider = (function() {
-    function Provider(api, options) {
+    function Provider(ipc, options) {
       var services;
-      this.api = api;
+      this.ipc = ipc;
       services = [];
       this.name = options.providerName, this.path = options.providerPath, this.services = options.services;
-      this.process = this.api.createProcess(this.path, 'responder', this.name);
-      this.api.recvFromChild(this.process, this.name, (function(_this) {
+      this.process = this.ipc.createProcess(this.path, 'responder', this.name);
+      this.ipc.recvFromChild(this.process, this.name, (function(_this) {
         return function(message) {
           switch (message.cmd) {
             case 'registerService':
@@ -24,7 +24,7 @@
     }
 
     Provider.prototype.send = function(message) {
-      return this.api.sendToChild(this.process, message);
+      return this.ipc.sendToChild(this.process, message);
     };
 
     Provider.prototype.startTask = function(serviceName, grammar, task) {

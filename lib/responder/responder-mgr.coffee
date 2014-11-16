@@ -5,27 +5,27 @@
 ###
 
 _   = require 'underscore-plus'
-Api = require '../api/api'
+ipc = require '../ipc/ipc'
 
 module.exports =
 class ResponderMgr 
   
-  constructor: (@api) ->
+  constructor: (@ipc) ->
     {TextEditorView} = require 'atom'
     TextEditor = new TextEditorView({}).getEditor().constructor
     @subs = []
     
     execPath = require('path').resolve __dirname, '../../js/responder-process.js'
-    @responder = @api.createProcess execPath, 'atom', 'responder'
+    @responder = @ipc.createProcess execPath, 'atom', 'responder'
     
-    @api.recvFromChild @responder, 'responder', (message) ->
+    @ipc.recvFromChild @responder, 'responder', (message) ->
       console.log 'DEBUG: received this from the responder process:\n', message
       
     setActiveEditorCmd = (editor) =>
         if editor instanceof TextEditor
           if editor isnt @currentEditor
             @currentEditor = editor
-            @api.sendToChild @responder, 
+            @ipc.sendToChild @responder, 
               cmd:    'newActiveEditor'
               title:   editor.getTitle()
               path:    editor.getPath()
@@ -33,7 +33,7 @@ class ResponderMgr
               grammar: editor.getGrammar().scopeName
               cursor:  editor.getLastCursor().getBufferPosition()
         else if @currentEditor
-          @api.sendToChild @responder, cmd: 'noActiveEditor' 
+          @ipc.sendToChild @responder, cmd: 'noActiveEditor' 
           @currentEditor = null
       
     @subs.push atom.workspaceView.eachEditorView (editorView) =>
@@ -51,7 +51,7 @@ class ResponderMgr
       @subs.push atom.workspace.onDidChangeActivePaneItem setActiveEditorCmd
           
       @subs.push editorSub = editor.onDidChange (evt) =>
-        @api.sendToChild @responder, 
+        @ipc.sendToChild @responder, 
           cmd:    'bufferEdit' 
           text:   editor.getTextInBufferRange [[evt.start, 0],[evt.end+1, 0]]
           event:  evt
@@ -66,11 +66,11 @@ class ResponderMgr
                   'requires autocomplete package version', options.autocompleteVersion,
                   'but this version is', version
       return
-    @api.sendToChild @responder, {cmd: 'register', options}
+    @ipc.sendToChild @responder, {cmd: 'register', options}
   
   destroy: ->
-    @api.sendToChild @responder, cmd: 'kill'
-    @api.destroy()
+    @ipc.sendToChild @responder, cmd: 'kill'
+    @ipc.destroy()
     for subscription in @subs
       subscription.off?()
       subscription.dispose?()

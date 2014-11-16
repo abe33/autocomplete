@@ -5,17 +5,17 @@
 module.exports =
 class Provider
    
-  constructor: (@api, options) ->
+  constructor: (@ipc, options) ->
     services = []
     {providerName: @name, providerPath: @path, @services} = options
     
-    @process = @api.createProcess @path, 'responder', @name
+    @process = @ipc.createProcess @path, 'responder', @name
     
-    @api.recvFromChild @process, @name, (message) =>
+    @ipc.recvFromChild @process, @name, (message) =>
       switch message.cmd
         when 'registerService' then services.push message.serviceName
       
-  send: (message) -> @api.sendToChild @process, message
+  send: (message) -> @ipc.sendToChild @process, message
   
   startTask: (serviceName, grammar, task) ->
     if (service = @services[serviceName]) and service.grammar is grammar
