@@ -20,13 +20,22 @@ api.recvFromParent 'responder', (msg) ->
     
   switch msg.cmd
     when 'register' 
-      providers.push new Provider api, options.providerName, options.providerPath
+      providers.push (provider = new Provider api, options)
+      # console.log 'register:', provider.getName(), msg
+      if buffer
+        console.log 'register startTask parse', 
+                     provider.getName(), buffer.getGrammar(), buffer.getText().length
+        provider.startTask 'parse', buffer.getGrammar(), source: buffer.getText()
       
     when 'newActiveEditor'      
-      console.log 'Editor:', msg.title
-      buffer = new ResponderBuffer(msg.text)
+      # console.log 'newActiveEditor:', msg.title
+      buffer = new ResponderBuffer(msg)
+      for provider in providers
+        console.log 'newActiveEditor startTask parse', 
+                     provider.getName(), buffer.getGrammar(), buffer.getText().length
+        provider.startTask 'parse', buffer.getGrammar(), source: buffer.getText()
       
-    when 'bufferEdit'     
+    when 'bufferEdit'
       if not buffer 
         console.log 'Received bufferEdit command when no buffer'
         return
@@ -43,5 +52,5 @@ api.recvFromParent 'responder', (msg) ->
       setTimeout (->process.exit 0), 300
       
     else console.log 'responder, unknown command:', msg
-      
+
 console.log 'hello'

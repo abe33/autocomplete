@@ -15,11 +15,12 @@
 
   module.exports = Api = (function() {
     function Api(name) {
+      this.name = name;
       process.stdin.resume();
       process.on('SIGTERM', (function(_this) {
         return function() {
-          if (name) {
-            console.log('Exiting', name + 'process');
+          if (_this.name) {
+            console.log('Exiting', _this.name + 'process');
           }
           process.exit(0);
           return _this.childProcessTerminated = true;
@@ -135,7 +136,27 @@
       }
     };
 
-    Api.prototype.on = function(task, callback) {};
+    Api.prototype.on = function(serviceName, callback) {
+      if (!this.serviceCallbacks) {
+        this.serviceCallbacks = {};
+        this.recvFromParent('responder', (function(_this) {
+          return function(msg) {
+            console.log('msg from responder', msg.serviceName, _this.serviceCallbacks);
+            switch (msg.cmd) {
+              case 'startTask':
+                return _this.serviceCallbacks[msg.serviceName](msg.task);
+              default:
+                return console.log('unknown command from responder', msg);
+            }
+          };
+        })(this));
+      }
+      this.serviceCallbacks[serviceName] = callback;
+      return this.sendToParent({
+        cmd: 'registerService',
+        serviceName: serviceName
+      });
+    };
 
     Api.prototype.destroy = function() {
       var subscription, _i, _len, _ref;

@@ -9,10 +9,10 @@ _       = require 'underscore-plus'
 
 module.exports =
 class Api
-  constructor: (name)->
+  constructor: (@name)->
     process.stdin.resume();
     process.on 'SIGTERM', => 
-      if name then console.log 'Exiting', name + 'process'
+      if @name then console.log 'Exiting', @name + 'process'
       process.exit 0
       @childProcessTerminated = yes
     @subs = []    
@@ -84,7 +84,19 @@ class Api
     catch e
       console.log 'Autocomplete api sendToChild error', e.message
 
-  on: (task, callback) ->
+  # used only in provider
+  on: (serviceName, callback) ->
+    
+    if not @serviceCallbacks
+      @serviceCallbacks = {}
+      @recvFromParent 'responder', (msg) =>
+        console.log 'msg from responder', msg.serviceName, @serviceCallbacks
+        switch msg.cmd
+          when 'startTask' then @serviceCallbacks[msg.serviceName] msg.task
+          else console.log 'unknown command from responder', msg
+            
+    @serviceCallbacks[serviceName] = callback
+    @sendToParent {cmd: 'registerService', serviceName}
 
   destroy: ->
     for subscription in @subs

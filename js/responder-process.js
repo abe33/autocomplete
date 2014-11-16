@@ -21,7 +21,7 @@
   };
 
   api.recvFromParent('responder', function(msg) {
-    var options, provider, _i, _len;
+    var options, provider, _i, _j, _len, _len1, _results;
     if (!providers) {
       return;
     }
@@ -29,10 +29,26 @@
     console.log('----', msg.cmd, '----');
     switch (msg.cmd) {
       case 'register':
-        return providers.push(new Provider(api, options.providerName, options.providerPath));
+        providers.push((provider = new Provider(api, options)));
+        if (buffer) {
+          console.log('register startTask parse', provider.getName(), buffer.getGrammar(), buffer.getText().length);
+          return provider.startTask('parse', buffer.getGrammar(), {
+            source: buffer.getText()
+          });
+        }
+        break;
       case 'newActiveEditor':
-        console.log('Editor:', msg.title);
-        return buffer = new ResponderBuffer(msg.text);
+        buffer = new ResponderBuffer(msg);
+        _results = [];
+        for (_i = 0, _len = providers.length; _i < _len; _i++) {
+          provider = providers[_i];
+          console.log('newActiveEditor startTask parse', provider.getName(), buffer.getGrammar(), buffer.getText().length);
+          _results.push(provider.startTask('parse', buffer.getGrammar(), {
+            source: buffer.getText()
+          }));
+        }
+        return _results;
+        break;
       case 'bufferEdit':
         if (!buffer) {
           console.log('Received bufferEdit command when no buffer');
@@ -42,8 +58,8 @@
       case 'noActiveEditor':
         return buffer = null;
       case 'kill':
-        for (_i = 0, _len = providers.length; _i < _len; _i++) {
-          provider = providers[_i];
+        for (_j = 0, _len1 = providers.length; _j < _len1; _j++) {
+          provider = providers[_j];
           console.log('Killing', provider.getName());
           provider.destroy();
         }
