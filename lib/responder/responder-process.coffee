@@ -14,26 +14,28 @@ send = (msg) -> ipc.sendToParent msg
 ipc.recvFromParent 'responder', (msg) ->
   if not providers then return
   {options} = msg
-   
+  
+  startParseTasks = (providerIn) ->
+    if buffer
+      for provider in (if providerIn then [providerIn] else providers)
+        provider.startTask 'parse', buffer,
+          filePath:    buffer.getPath()
+          sourceLines: buffer.getLines()
+          grammar:     buffer.getGrammar()
+          
   console.log '----', msg.cmd, '----'
   # if msg.text then console.log msg.text.replace(/\n/g, '\\n')[0..80]
     
   switch msg.cmd
+    
     when 'register' 
       providers.push (provider = new Provider ipc, options)
-      # console.log 'register:', provider.getName(), msg
-      if buffer
-        console.log 'register startTask parse', 
-                     provider.getName(), buffer.getGrammar(), buffer.getText().length
-        provider.startTask 'parse', buffer.getGrammar(), source: buffer.getText()
+      startParseTasks provider
       
     when 'newActiveEditor'      
       # console.log 'newActiveEditor:', msg.title
       buffer = new ResponderBuffer(msg)
-      for provider in providers
-        console.log 'newActiveEditor startTask parse', 
-                     provider.getName(), buffer.getGrammar(), buffer.getText().length
-        provider.startTask 'parse', buffer.getGrammar(), source: buffer.getText()
+      startParseTasks()
       
     when 'bufferEdit'
       if not buffer 

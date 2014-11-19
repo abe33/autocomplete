@@ -12,8 +12,8 @@ module.exports =
 
   activate: ->
     process.nextTick =>
-      @ipc          = new (require('../js/ipc'))
-      @responderMgr = new (require('./responder/responder-mgr'))(@ipc)
+      @ipc                = new (require('../js/ipc'))
+      @responderInterface = new (require('./responder-interface'))(@ipc)
     
     # _ = require 'underscore-plus'
     # AutocompleteView = require './autocomplete-view'
@@ -26,10 +26,10 @@ module.exports =
     #       _.remove(@autocompleteViews, autocompleteView)
     #     @autocompleteViews.push(autocompleteView)
 
-  registerProvider: (options) -> @responderMgr.registerProvider options
+  registerProvider: (options) -> @responderInterface.registerProvider options
     
   deactivate: ->
-    @responderMgr.destroy()
+    @responderInterface.destroy()
     @editorSubscription?.off()
     @editorSubscription = null
     @autocompleteViews.forEach (autocompleteView) -> autocompleteView.remove()

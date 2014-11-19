@@ -8,16 +8,17 @@
 
   module.exports = Provider = (function() {
     function Provider(ipc, options) {
-      var services;
       this.ipc = ipc;
-      services = [];
       this.name = options.providerName, this.path = options.providerPath, this.services = options.services;
       this.process = this.ipc.createProcess(this.path, 'responder', this.name);
       this.ipc.recvFromChild(this.process, this.name, (function(_this) {
-        return function(message) {
-          switch (message.cmd) {
-            case 'registerService':
-              return services.push(message.serviceName);
+        return function(msg) {
+          switch (msg.cmd) {
+            case 'taskResults':
+              switch (msg.service) {
+                case 'parse':
+                  return _this.buffer.addScopesToTrie(msg.filePath, msg.scopeList);
+              }
           }
         };
       })(this));
@@ -27,10 +28,10 @@
       return this.ipc.sendToChild(this.process, message);
     };
 
-    Provider.prototype.startTask = function(serviceName, grammar, task) {
-      var service;
-      if ((service = this.services[serviceName]) && service.grammar === grammar) {
-        console.log('provider startTask', this.name, serviceName);
+    Provider.prototype.startTask = function(serviceName, buffer, task) {
+      var service, _ref;
+      this.buffer = buffer;
+      if ((service = this.services[serviceName]) && ((_ref = service.grammar) === task.grammar || _ref === '*')) {
         return this.send({
           cmd: 'startTask',
           serviceName: serviceName,

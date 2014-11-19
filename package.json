@@ -10,7 +10,7 @@
   "dependencies": {
     "semver": "~2.3.0",
     "underscore-plus": "1.x",
-    "atom-utils": "*"
+    "xregexp": "slevithan/xregexp"
   },
   "devDependencies": {
     "grunt": "^0.4.5",

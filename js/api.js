@@ -2,22 +2,21 @@
 /*
   lib/provider/api.coffee
   
-  This is only required by providers
+  This is only used by providers
  */
 
 (function() {
-  var Api, ipc, spawn, _;
-
-  spawn = require('child_process').spawn;
+  var Api, Scope, ipc, _;
 
   _ = require('underscore-plus');
 
   ipc = new (require(process.argv[2]))('api');
 
+  Scope = require('./scope');
+
   module.exports = Api = (function() {
     function Api(name) {
       this.name = name;
-      this.subs = [];
     }
 
     Api.prototype.on = function(serviceName, callback) {
@@ -25,7 +24,6 @@
         this.serviceCallbacks = {};
         ipc.recvFromParent('responder', (function(_this) {
           return function(msg) {
-            console.log('msg from responder', msg.serviceName, _this.serviceCallbacks);
             switch (msg.cmd) {
               case 'startTask':
                 return _this.serviceCallbacks[msg.serviceName](msg.task);
@@ -35,26 +33,17 @@
           };
         })(this));
       }
-      this.serviceCallbacks[serviceName] = callback;
-      return ipc.sendToParent({
-        cmd: 'registerService',
-        serviceName: serviceName
-      });
+      return this.serviceCallbacks[serviceName] = callback;
     };
 
-    Api.prototype.destroy = function() {
-      var subscription, _i, _len, _ref;
-      _ref = this.subs;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        subscription = _ref[_i];
-        if (typeof subscription.off === "function") {
-          subscription.off();
-        }
-        if (typeof subscription.dispose === "function") {
-          subscription.dispose();
-        }
-      }
-      return delete this.subs;
+    Api.prototype.getScopeClass = function() {
+      return Scope;
+    };
+
+    Api.prototype.taskResults = function(results) {
+      return ipc.sendToParent(_.extend(results, {
+        cmd: 'taskResults'
+      }));
     };
 
     return Api;

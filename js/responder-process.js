@@ -21,34 +21,35 @@
   };
 
   ipc.recvFromParent('responder', function(msg) {
-    var options, provider, _i, _j, _len, _len1, _results;
+    var options, provider, startParseTasks, _i, _len;
     if (!providers) {
       return;
     }
     options = msg.options;
+    startParseTasks = function(providerIn) {
+      var provider, _i, _len, _ref, _results;
+      if (buffer) {
+        _ref = (providerIn ? [providerIn] : providers);
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          provider = _ref[_i];
+          _results.push(provider.startTask('parse', buffer, {
+            filePath: buffer.getPath(),
+            sourceLines: buffer.getLines(),
+            grammar: buffer.getGrammar()
+          }));
+        }
+        return _results;
+      }
+    };
     console.log('----', msg.cmd, '----');
     switch (msg.cmd) {
       case 'register':
         providers.push((provider = new Provider(ipc, options)));
-        if (buffer) {
-          console.log('register startTask parse', provider.getName(), buffer.getGrammar(), buffer.getText().length);
-          return provider.startTask('parse', buffer.getGrammar(), {
-            source: buffer.getText()
-          });
-        }
-        break;
+        return startParseTasks(provider);
       case 'newActiveEditor':
         buffer = new ResponderBuffer(msg);
-        _results = [];
-        for (_i = 0, _len = providers.length; _i < _len; _i++) {
-          provider = providers[_i];
-          console.log('newActiveEditor startTask parse', provider.getName(), buffer.getGrammar(), buffer.getText().length);
-          _results.push(provider.startTask('parse', buffer.getGrammar(), {
-            source: buffer.getText()
-          }));
-        }
-        return _results;
-        break;
+        return startParseTasks();
       case 'bufferEdit':
         if (!buffer) {
           console.log('Received bufferEdit command when no buffer');
@@ -58,8 +59,8 @@
       case 'noActiveEditor':
         return buffer = null;
       case 'kill':
-        for (_j = 0, _len1 = providers.length; _j < _len1; _j++) {
-          provider = providers[_j];
+        for (_i = 0, _len = providers.length; _i < _len; _i++) {
+          provider = providers[_i];
           console.log('Killing', provider.getName());
           provider.destroy();
         }
