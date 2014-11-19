@@ -12,6 +12,7 @@ class Provider
     
     @ipc.recvFromChild @process, @name, (msg) =>
       switch msg.cmd
+        
         when 'taskResults' 
           switch msg.service
             when 'parse'

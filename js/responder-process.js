@@ -4,7 +4,7 @@
  */
 
 (function() {
-  var Provider, ResponderBuffer, buffer, ipc, providers, send;
+  var Provider, ResponderBuffer, buffer, ipc, providers, sendToAtom;
 
   ipc = new (require(process.argv[2]))('responder');
 
@@ -16,7 +16,7 @@
 
   providers = [];
 
-  send = function(msg) {
+  sendToAtom = function(msg) {
     return ipc.sendToParent(msg);
   };
 
@@ -48,14 +48,14 @@
         providers.push((provider = new Provider(ipc, options)));
         return startParseTasks(provider);
       case 'newActiveEditor':
-        buffer = new ResponderBuffer(msg);
+        buffer = new ResponderBuffer(msg, sendToAtom);
         return startParseTasks();
       case 'bufferEdit':
         if (!buffer) {
           console.log('Received bufferEdit command when no buffer');
           return;
         }
-        return buffer.applyChg(msg);
+        return buffer.onBufferChange(msg);
       case 'noActiveEditor':
         return buffer = null;
       case 'kill':

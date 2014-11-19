@@ -9,8 +9,14 @@
   XRegExp = require('xregexp').XRegExp;
 
   module.exports = Scope = (function() {
-    function Scope(_arg) {
-      this.word = _arg.word, this.type = _arg.type, this.file = _arg.file, this.startLine = _arg.startLine, this.endLine = _arg.endLine, this.prefixCaptures = _arg.prefixCaptures, this.weight = _arg.weight, this.label = _arg.label, this.hint = _arg.hint;
+    function Scope(init) {
+      var k, v;
+      for (k in init) {
+        v = init[k];
+        if (v) {
+          this[k] = v;
+        }
+      }
     }
 
     Scope.prototype.match = function(scope) {
@@ -30,7 +36,7 @@
     };
 
     Scope.prototype.mergeToResultListWeighted = function(lineNum, prefix, resultList) {
-      var adjustWeight, captureName, captureSpecs, captureStr, endLine, hint, label, lastRes, match, prefixCaptures, prefixRegex, scopeWeight, startLine, weight, word;
+      var adjustWeight, captureName, captureSpec, captureSpecs, captureStr, endLine, hint, label, lastRes, match, prefixCaptures, prefixRegex, scopeWeight, startLine, weight, word, xregex, _i, _len;
       resultList.sort(function(res1, res2) {
         if (res1.word > res2.word) {
           return 1;
@@ -41,37 +47,39 @@
       adjustWeight = function(weight, incMul) {
         var inc, mul;
         inc = incMul[0], mul = incMul[1];
-        weight *= mul != null ? mul : 1;
-        return weight += inc;
+        weight *= +(mul != null ? mul : 1);
+        return weight += +inc;
       };
       word = this.word, startLine = this.startLine, endLine = this.endLine, scopeWeight = this.scopeWeight, prefixRegex = this.prefixRegex, prefixCaptures = this.prefixCaptures, label = this.label, hint = this.hint, weight = this.weight;
       if ((startLine != null) && ((startLine <= lineNum && lineNum <= endLine))) {
         weight = adjustWeight(weight, scopeWeight);
       }
       if (prefixRegex) {
-        console.log(1);
-        if ((match = (new XRegExp(prefixRegex + '$', 'i')).exec(prefix))) {
-          console.log(2);
+        xregex = XRegExp(prefixRegex + '$', 'i');
+        if ((match = XRegExp.exec(prefix, xregex))) {
           for (captureName in prefixCaptures) {
             captureSpecs = prefixCaptures[captureName];
-            console.log(3);
-            if ((captureStr = match[captureName]) && (new RegExp(captureSpecs[0])).test(captureStr)) {
-              console.log(4);
-              weight = adjustWeight(weight, captureSpecs.slice(1, 3));
+            if ((captureStr = match[captureName])) {
+              for (_i = 0, _len = captureSpecs.length; _i < _len; _i++) {
+                captureSpec = captureSpecs[_i];
+                if ((new RegExp(captureSpec[0])).test(captureStr)) {
+                  weight = adjustWeight(weight, captureSpec.slice(1, 3));
+                  break;
+                }
+              }
             }
           }
         }
       }
-      if ((lastRes = resultList.slice(-1)[0]) && lastRes[1].word === word) {
-        return lastRes[0] += weight;
+      if ((lastRes = resultList.slice(-1)[0]) && lastRes.word === word) {
+        return lastRes.weight += weight;
       } else {
-        return resultList.push([
-          weight, {
-            word: word,
-            label: label,
-            hint: hint
-          }
-        ]);
+        return resultList.push({
+          weight: weight,
+          word: word,
+          label: label,
+          hint: hint
+        });
       }
     };
 

@@ -12,22 +12,18 @@
   Trie = require('./trie');
 
   module.exports = ResponderBuffer = (function() {
-    function ResponderBuffer(msg) {
+    function ResponderBuffer(msg, sendToAtom) {
       var text;
+      this.sendToAtom = sendToAtom;
       this.path = msg.path, text = msg.text, this.grammar = msg.grammar;
       this.lines = (text ? text.split('\n') : []);
     }
 
-    ResponderBuffer.prototype.applyChg = function(chg) {
-      var bufferDelta, chgdLineEnd, chgdLineStart, cmd, cursor, cursorColumn, cursorRow, event, line, prefix, resultList, text, wordFragment, _ref, _ref1, _ref2;
+    ResponderBuffer.prototype.onBufferChange = function(chg) {
+      var bufferDelta, chgdLineEnd, chgdLineStart, cmd, cursor, cursorColumn, cursorRow, event, line, prefix, result, resultList, text, wordFragment, _i, _len, _ref, _ref1, _ref2;
       cmd = chg.cmd, text = chg.text, event = chg.event, cursor = chg.cursor;
       cursorRow = cursor.row, cursorColumn = cursor.column;
       chgdLineStart = event.start, chgdLineEnd = event.end, bufferDelta = event.bufferDelta;
-      console.log('buffer applyChg', {
-        chgdLineStart: chgdLineStart,
-        cursorRow: cursorRow,
-        cursorColumn: cursorColumn
-      });
       text = text.replace(/\n$/, '');
       this.chgdLines = text.split('\n');
       (_ref = this.lines).splice.apply(_ref, [chgdLineStart, this.chgdLines.length - bufferDelta].concat(__slice.call(this.chgdLines)));
@@ -35,14 +31,24 @@
         line = this.lines[chgdLineStart];
         if ((wordFragment = (_ref1 = /[a-z\_$]+$/i.exec(line.slice(0, cursorColumn))) != null ? _ref1[0] : void 0)) {
           prefix = line.slice(0, cursorColumn - wordFragment.length);
-          console.log('prefix wordFragment:', {
-            prefix: prefix,
-            wordFragment: wordFragment
-          });
           resultList = (_ref2 = this.trie) != null ? _ref2.getResultList(chgdLineStart, prefix, wordFragment) : void 0;
-          console.log('resultList', require('util').inspect(resultList, {
-            depth: null
-          }));
+          resultList.sort(function(res1, res2) {
+            var dif;
+            if ((dif = res2.weight - res1.weight)) {
+              return dif;
+            } else {
+              return res2.word.length - res1.word.length;
+            }
+          });
+          console.log(wordFragment);
+          for (_i = 0, _len = resultList.length; _i < _len; _i++) {
+            result = resultList[_i];
+            console.log(result.weight, result.label);
+          }
+          return this.sendToAtom({
+            cmd: 'suggestionList',
+            list: resultList
+          });
         }
       }
     };

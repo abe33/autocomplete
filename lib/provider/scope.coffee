@@ -7,9 +7,7 @@
 module.exports =
 class Scope
 
-  constructor: ({
-    @word, @type, @file, @startLine, @endLine, @prefixCaptures, @weight, @label, @hint
-  }) ->
+  constructor: (init) -> for k, v of init when v then @[k] = v
   
   match: (scope) ->
     JSON.stringify([
@@ -27,7 +25,7 @@ class Scope
       scope.endLine       
       scope.prefixCaptures
     ])
-        
+    
   mergeToList: (list) ->
     for scope in list
       if @match scope then scope.weight += @weight; return
@@ -38,8 +36,8 @@ class Scope
     
     adjustWeight = (weight, incMul) ->
       [inc, mul] = incMul
-      weight *= (mul ? 1)
-      weight += inc
+      weight *= +(mul ? 1)
+      weight += +inc
     
     {word, startLine, endLine, scopeWeight, 
     prefixRegex, prefixCaptures, label, hint, weight} = this
@@ -49,19 +47,18 @@ class Scope
         weight = adjustWeight weight, scopeWeight
     
     if prefixRegex
-      console.log 1
-      if (match = (new XRegExp prefixRegex+'$', 'i').exec prefix)
-        console.log 2
+      xregex = XRegExp prefixRegex+'$', 'i'
+      if (match = XRegExp.exec prefix, xregex)
         for captureName, captureSpecs of prefixCaptures
-          console.log 3
-          if (captureStr = match[captureName]) and
-             (new RegExp captureSpecs[0]).test captureStr 
-            console.log 4
-            weight = adjustWeight weight, captureSpecs[1..2]
+          if (captureStr = match[captureName])
+            for captureSpec in captureSpecs
+              if (new RegExp captureSpec[0]).test captureStr 
+                weight = adjustWeight weight, captureSpec[1..2]
+                break
     
-    if (lastRes = resultList[-1..-1][0]) and lastRes[1].word is word
-      lastRes[0] += weight
+    if (lastRes = resultList[-1..-1][0]) and lastRes.word is word
+      lastRes.weight += weight
     else
-      resultList.push [weight, {word, label, hint}]
+      resultList.push {weight, word, label, hint}
     
         

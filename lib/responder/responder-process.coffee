@@ -9,7 +9,7 @@ Provider        = require './provider'
 buffer = null
 providers = []
 
-send = (msg) -> ipc.sendToParent msg
+sendToAtom = (msg) -> ipc.sendToParent msg
 
 ipc.recvFromParent 'responder', (msg) ->
   if not providers then return
@@ -34,14 +34,14 @@ ipc.recvFromParent 'responder', (msg) ->
       
     when 'newActiveEditor'      
       # console.log 'newActiveEditor:', msg.title
-      buffer = new ResponderBuffer(msg)
+      buffer = new ResponderBuffer(msg, sendToAtom)
       startParseTasks()
       
     when 'bufferEdit'
       if not buffer 
         console.log 'Received bufferEdit command when no buffer'
         return
-      buffer.applyChg msg
+      buffer.onBufferChange msg
        
     when 'noActiveEditor' 
       buffer = null

@@ -28,7 +28,7 @@ class Trie
       lastWord = scope.word
     chkWordBreak {}
 
-    # console.log 'Trie::addScopes', require('util').inspect (this), depth: null
+    # console.log 'exit addScopes', require('util').inspect (this), depth: null
     
   getResultList: (lineNum, prefix, wordFragment) ->
     resultList = []
