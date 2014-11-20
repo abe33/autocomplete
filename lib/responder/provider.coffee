@@ -4,28 +4,31 @@
 
 module.exports =
 class Provider
-   
-  constructor: (@ipc, options) ->
-    {providerName: @name, providerPath: @path, @services} = options
-    
-    @process = @ipc.createProcess @path, 'responder', @name
-    
-    @ipc.recvFromChild @process, @name, (msg) =>
-      switch msg.cmd
-        
-        when 'taskResults' 
-          switch msg.service
-            when 'parse'
-              @buffer.addScopesToTrie msg.filePath, msg.scopeList
+  constructor: (@ipc, @responder, registerOptions) ->
+    {@providerName, @services} = registerOptions
+    @providerProcess = @responder.providerProcess
+    @ipc.sendToChild @providerProcess, {cmd: 'register', registerOptions}
       
-  send: (message) -> @ipc.sendToChild @process, message
+  sendToProcess: (msg) -> 
+    msg.providerName = @providerName
+    @ipc.sendToChild @providerProcess, msg
   
-  startTask: (serviceName, @buffer, task) ->
-    if (service = @services[serviceName]) and service.grammar in [task.grammar, '*']
-      @send {cmd: 'startTask', serviceName, task}
+  startTask: (task) ->
+    @sendToProcess {cmd: 'startTask', task}
+    
+  recvFromProcess: (msg) ->
+    switch msg.cmd
+      when 'taskDone'
+        {serviceName, meta, results} = msg
+        switch serviceName
+          when 'parse' 
+            @responder.addScopesToTrie meta.filePath, results
   
-  getName: -> @name
-
-  destroy: -> 
-    @process.kill 'SIGTERM'
-    @process = null
+  getName: -> @providerName
+  
+  hasService: (serviceName) -> @services[serviceName]?
+  
+  supportsGrammar: (serviceName, grammar) -> 
+    (grammarSpec = @services[serviceName]?.grammar) and
+    (grammarSpec is '*' or grammar is grammarSpec)
+  

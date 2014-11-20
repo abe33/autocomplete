@@ -7,46 +7,52 @@
   var Provider;
 
   module.exports = Provider = (function() {
-    function Provider(ipc, options) {
+    function Provider(ipc, responder, registerOptions) {
       this.ipc = ipc;
-      this.name = options.providerName, this.path = options.providerPath, this.services = options.services;
-      this.process = this.ipc.createProcess(this.path, 'responder', this.name);
-      this.ipc.recvFromChild(this.process, this.name, (function(_this) {
-        return function(msg) {
-          switch (msg.cmd) {
-            case 'taskResults':
-              switch (msg.service) {
-                case 'parse':
-                  return _this.buffer.addScopesToTrie(msg.filePath, msg.scopeList);
-              }
-          }
-        };
-      })(this));
+      this.responder = responder;
+      this.providerName = registerOptions.providerName, this.services = registerOptions.services;
+      this.providerProcess = this.responder.providerProcess;
+      this.ipc.sendToChild(this.providerProcess, {
+        cmd: 'register',
+        registerOptions: registerOptions
+      });
     }
 
-    Provider.prototype.send = function(message) {
-      return this.ipc.sendToChild(this.process, message);
+    Provider.prototype.sendToProcess = function(msg) {
+      msg.providerName = this.providerName;
+      return this.ipc.sendToChild(this.providerProcess, msg);
     };
 
-    Provider.prototype.startTask = function(serviceName, buffer, task) {
-      var service, _ref;
-      this.buffer = buffer;
-      if ((service = this.services[serviceName]) && ((_ref = service.grammar) === task.grammar || _ref === '*')) {
-        return this.send({
-          cmd: 'startTask',
-          serviceName: serviceName,
-          task: task
-        });
+    Provider.prototype.startTask = function(task) {
+      return this.sendToProcess({
+        cmd: 'startTask',
+        task: task
+      });
+    };
+
+    Provider.prototype.recvFromProcess = function(msg) {
+      var meta, results, serviceName;
+      switch (msg.cmd) {
+        case 'taskDone':
+          serviceName = msg.serviceName, meta = msg.meta, results = msg.results;
+          switch (serviceName) {
+            case 'parse':
+              return this.responder.addScopesToTrie(meta.filePath, results);
+          }
       }
     };
 
     Provider.prototype.getName = function() {
-      return this.name;
+      return this.providerName;
     };
 
-    Provider.prototype.destroy = function() {
-      this.process.kill('SIGTERM');
-      return this.process = null;
+    Provider.prototype.hasService = function(serviceName) {
+      return this.services[serviceName] != null;
+    };
+
+    Provider.prototype.supportsGrammar = function(serviceName, grammar) {
+      var grammarSpec, _ref;
+      return (grammarSpec = (_ref = this.services[serviceName]) != null ? _ref.grammar : void 0) && (grammarSpec === '*' || grammar === grammarSpec);
     };
 
     return Provider;

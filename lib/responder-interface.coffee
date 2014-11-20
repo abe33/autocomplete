@@ -4,27 +4,26 @@
   It provides the interface from atom to the responder process
 ###
  
-_ = require 'underscore-plus'
- 
+_        = require 'underscore-plus'
+ipc      = new (require('../js/ipc'))
+pathUtil = require('path')
+
 module.exports =
 class ResponderInterface
   
-  constructor: (@ipc) ->
+  constructor: ->
     {TextEditorView} = require 'atom'
     TextEditor = new TextEditorView({}).getEditor().constructor
     @subs = []
     
-    execPath = require('path').resolve __dirname, '../js/responder-process.js'
-    @responder = @ipc.createProcess execPath, 'atom', 'responder'
+    execPath = pathUtil.resolve __dirname, '../js/responder-process.js'
+    @responderProcess = ipc.createProcess execPath, 'atom', 'responder'
     
-    @ipc.recvFromChild @responder, 'responder', (message) ->
-      console.log 'DEBUG: received this from the responder process:\n', message
-      
-    setActiveEditorCmd = (editor) =>
+    setActiveEditor = (editor) =>
         if editor instanceof TextEditor
           if editor isnt @currentEditor
             @currentEditor = editor
-            @ipc.sendToChild @responder, 
+            ipc.sendToChild @responderProcess, 
               cmd:    'newActiveEditor'
               title:   editor.getTitle()
               path:    editor.getPath()
@@ -32,7 +31,7 @@ class ResponderInterface
               grammar: editor.getGrammar().scopeName
               cursor:  editor.getLastCursor().getBufferPosition()
         else if @currentEditor
-          @ipc.sendToChild @responder, cmd: 'noActiveEditor' 
+          ipc.sendToChild @responderProcess, cmd: 'noActiveEditor' 
           @currentEditor = null
       
     @subs.push atom.workspaceView.eachEditorView (editorView) =>
@@ -48,19 +47,26 @@ class ResponderInterface
       # editor.onDidChangeGrammar(callback) 
       # editor.onDidDestroy(callback) 
       
-      if editorView.getPaneView().is '.active' then setActiveEditorCmd editor
+      if editorView.getPaneView().is '.active' then setActiveEditor editor
       
-      @subs.push atom.workspace.onDidChangeActivePaneItem setActiveEditorCmd
+      @subs.push atom.workspace.onDidChangeActivePaneItem setActiveEditor
           
       @subs.push editorSub = editor.onDidChange (evt) =>
-        @ipc.sendToChild @responder, 
-          cmd:    'bufferEdit' 
+        ipc.sendToChild @responderProcess, 
+          cmd:    'bufferEdit'
           text:   editor.getTextInBufferRange [[evt.start, 0],[evt.end+1, 0]]
           event:  evt
           cursor: editor.getLastCursor().getBufferPosition()
         
       @subs.push editorView.on 'editor:will-be-removed', -> editorSub.off()
       
+    ipc.recvFromChild @responderProcess, 'responder', (msg) =>
+      # console.log 'autocomplete: received a message from the responder:\n', msg
+      switch msg.cmd
+        when 'suggestionList'
+          console.log 'Suggestion list for view ...\n', 
+                       require('util').inspect msg.list, depth: null
+
   registerProvider: (options) ->
     version = require('../package.json').version
     if not require('semver').satisfies version, options.autocompleteVersion
@@ -68,11 +74,11 @@ class ResponderInterface
                   'requires autocomplete package version', options.autocompleteVersion,
                   'but this version is', version
       return
-    @ipc.sendToChild @responder, {cmd: 'register', options}
+    ipc.sendToChild @responderProcess, {cmd: 'register', options}
   
   destroy: ->
-    @ipc.sendToChild @responder, cmd: 'kill'
-    @ipc.destroy()
+    ipc.sendToChild @responderProcess, cmd: 'kill'
+    ipc.destroy()
     for subscription in @subs
       subscription.off?()
       subscription.dispose?()

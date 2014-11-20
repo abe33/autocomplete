@@ -11,6 +11,9 @@ class ResponderBuffer
   constructor: (msg, @sendToAtom) ->
     {@path, text, @grammar} = msg
     @lines = (if text then text.split '\n' else [])
+    
+    @timeStamp = msg.timeStamp
+    
     # console.log '---- constructor ----\n', @lines
     
   onBufferChange: (chg) ->
@@ -33,20 +36,18 @@ class ResponderBuffer
       line = @lines[chgdLineStart]
       if (wordFragment = /[a-z\_$]+$/i.exec(line[0...cursorColumn])?[0])
         prefix = line[0...cursorColumn - wordFragment.length]
-        # console.log 'prefix wordFragment:', {prefix, wordFragment}
-        resultList = @trie?.getResultList chgdLineStart, prefix, wordFragment
-        resultList.sort (res1, res2) -> 
-          if (dif = res2.weight - res1.weight) then dif
-          else res2.word.length - res1.word.length
-        # console.log 'resultList', require('util').inspect resultList, depth: null
-        
-        console.log wordFragment
-        for result in resultList
-          console.log result.weight, result.label
+        if (resultList = @trie?.getResultList chgdLineStart, prefix, wordFragment)
+          resultList.sort (res1, res2) -> 
+            if (dif = res2.weight - res1.weight) then dif
+            else res2.word.length - res1.word.length
           
-        @sendToAtom
-          cmd: 'suggestionList'
-          list: resultList
+          # console.log wordFragment
+          # for result in resultList
+          #   console.log result.weight, result.label
+            
+          @sendToAtom
+            cmd: 'suggestionList'
+            list: resultList
       
   getGrammar: -> @grammar
   getLines:   -> @lines

@@ -4,9 +4,11 @@
  */
 
 (function() {
-  var Provider, ResponderBuffer, buffer, ipc, providers, sendToAtom;
+  var Provider, ResponderBuffer, buffer, ipc, jsPath, killed, providerProcess, providers, responder, sendToAtom;
 
-  ipc = new (require(process.argv[2]))('responder');
+  jsPath = process.argv[2];
+
+  ipc = new (require(jsPath + '/ipc.js'))('responder');
 
   ResponderBuffer = require('./responder-buffer');
 
@@ -14,42 +16,51 @@
 
   buffer = null;
 
-  providers = [];
+  killed = false;
+
+  providers = {};
+
+  responder = {};
+
+  responder.providerProcess = providerProcess = ipc.createProcess(jsPath + '/provider-process.js', 'responder', 'provider');
 
   sendToAtom = function(msg) {
     return ipc.sendToParent(msg);
   };
 
   ipc.recvFromParent('responder', function(msg) {
-    var options, provider, startParseTasks, _i, _len;
-    if (!providers) {
+    var provider, providerName, startParseTask, _results;
+    if (killed) {
       return;
     }
-    options = msg.options;
-    startParseTasks = function(providerIn) {
-      var provider, _i, _len, _ref, _results;
-      if (buffer) {
-        _ref = (providerIn ? [providerIn] : providers);
-        _results = [];
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          provider = _ref[_i];
-          _results.push(provider.startTask('parse', buffer, {
-            filePath: buffer.getPath(),
-            sourceLines: buffer.getLines(),
-            grammar: buffer.getGrammar()
-          }));
-        }
-        return _results;
+    startParseTask = function(provider) {
+      if (provider.supportsGrammar('parse', buffer.getGrammar())) {
+        return provider.startTask({
+          serviceName: 'parse',
+          sourceLines: buffer.getLines(),
+          meta: {
+            filePath: buffer.getPath()
+          }
+        });
       }
     };
-    console.log('----', msg.cmd, '----');
     switch (msg.cmd) {
       case 'register':
-        providers.push((provider = new Provider(ipc, options)));
-        return startParseTasks(provider);
+        provider = new Provider(ipc, responder, msg.options);
+        providers[msg.options.providerName] = provider;
+        if (buffer) {
+          return startParseTask(provider);
+        }
+        break;
       case 'newActiveEditor':
         buffer = new ResponderBuffer(msg, sendToAtom);
-        return startParseTasks();
+        _results = [];
+        for (providerName in providers) {
+          provider = providers[providerName];
+          _results.push(startParseTask(provider));
+        }
+        return _results;
+        break;
       case 'bufferEdit':
         if (!buffer) {
           console.log('Received bufferEdit command when no buffer');
@@ -59,19 +70,23 @@
       case 'noActiveEditor':
         return buffer = null;
       case 'kill':
-        for (_i = 0, _len = providers.length; _i < _len; _i++) {
-          provider = providers[_i];
-          console.log('Killing', provider.getName());
-          provider.destroy();
-        }
-        providers = null;
+        providerProcess.kill('SIGTERM');
+        killed = true;
         return setTimeout((function() {
           return process.exit(0);
-        }), 300);
+        }), 1000);
       default:
         return console.log('responder, unknown command:', msg);
     }
   });
+
+  ipc.recvFromChild(providerProcess, 'provider', function(msg) {
+    return providers[msg.providerName].recvFromProcess(msg);
+  });
+
+  responder.addScopesToTrie = function(filePath, scopeList) {
+    return buffer != null ? buffer.addScopesToTrie(filePath, scopeList) : void 0;
+  };
 
   console.log('hello');
 

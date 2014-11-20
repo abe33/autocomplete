@@ -31,10 +31,9 @@
       this.subs = [];
     }
 
-    Ipc.prototype.createProcess = function() {
-      var args, childName, childProcess, parentName, path, procEvt;
-      path = arguments[0], parentName = arguments[1], childName = arguments[2], args = 4 <= arguments.length ? __slice.call(arguments, 3) : [];
-      childProcess = spawn('node', [path, __filename, jsPath + '\\api.js'].concat(args));
+    Ipc.prototype.createProcess = function(path, parentName, childName) {
+      var childProcess, procEvt;
+      childProcess = spawn('node', [path, jsPath]);
       procEvt = (function(_this) {
         return function(src, event, msg) {
           if (msg == null) {

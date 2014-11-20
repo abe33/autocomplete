@@ -12,8 +12,7 @@ module.exports =
 
   activate: ->
     process.nextTick =>
-      @ipc                = new (require('../js/ipc'))
-      @responderInterface = new (require('./responder-interface'))(@ipc)
+      @responderInterface = new (require('./responder-interface'))
     
     # _ = require 'underscore-plus'
     # AutocompleteView = require './autocomplete-view'

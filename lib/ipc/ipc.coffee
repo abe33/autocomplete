@@ -19,9 +19,9 @@ class Ipc
       @childProcessTerminated = yes
     @subs = []    
     
-  createProcess: (path, parentName, childName, args...) ->
+  createProcess: (path, parentName, childName) ->
     
-    childProcess = spawn 'node', [path, __filename, jsPath + '\\api.js'].concat args
+    childProcess = spawn 'node', [path, jsPath]
     
     procEvt = (src, event, msg) =>
       msg ?= event
